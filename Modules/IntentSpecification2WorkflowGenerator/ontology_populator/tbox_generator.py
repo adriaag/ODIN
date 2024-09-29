@@ -183,18 +183,20 @@ def add_properties(ontology: Graph):
         (tb.hasApplier, tb.LearnerComponent, tb.ApplierComponent),
         (tb.hasVisualizer, tb.LearnerComponent, tb.VisualizerComponent),
         (tb.hasLearner, tb.VisualizerComponent, tb.LearnerComponent),
+        (tb.hasPreference, tb.Component, tb.DataTag),
         # Step
         (tb.followedBy, tb.Step, tb.Step),
         (tb.hasInput, tb.Step, tb.Data),
         (tb.hasOutput, tb.Step, tb.Data),
         (tb.runs, tb.Step, tb.Component),
+        (tb.usesParameter, tb.Step, tb.Parameter),
         # (tb.order, tb.Step, XSD.integer),
         # Parameter
         (tb.specifiedBy, tb.Parameter, tb.ParameterSpecification),
-        (tb.hasDatatype, tb.Parameter, None),
-        (tb.hasDefaultValue, tb.Parameter, None),
+        (tb.has_datatype, tb.Parameter, None),
+        (tb.has_defaultvalue, tb.Parameter, None),
         # Hyperparameter Specification
-        (tb.hasValue, tb.ParameterSpecification, XSD.string),
+        (tb.hasValue, tb.ParameterSpecification, None),
         # Data
         # (tb.conformsTo, tb.Data, tb.DataTag),
         (dolce.hasQuality, tb.Data, tb.DataCharacteristics),
@@ -216,8 +218,9 @@ def add_properties(ontology: Graph):
         (tb.copy_output, tb.CopyTransformation, XSD.integer),
         (tb.transformation_language, tb.Transformation, XSD.string),
         (tb.transformation_query, tb.Transformation, XSD.string),
-        # IO
+        # Data
         (tb.has_position, [tb.Data, tb.DataSpec, tb.Step, tb.Parameter], XSD.integer),
+        (tb.has_condition, tb.Parameter, XSD.string)
     ]
 
     for s, p, o in dproperties:
@@ -244,6 +247,7 @@ def add_properties(ontology: Graph):
         (dmop.hasStandardDeviation, dmop.ColumnValueInfoProperty),
         (dmop.hasMaxValue, dmop.ColumnValueInfoProperty),
         (dmop.hasMinValue, dmop.ColumnValueInfoProperty),
+        (dmop.isNormalDistribution, dmop.ColumnInfoProperty),
 
         # Dataset
         (dmop.delimiter, dmop.DatasetPhysicalProperty),
@@ -258,6 +262,8 @@ def add_properties(ontology: Graph):
         (dmop.path, dmop.DatasetPhysicalProperty),
         (dmop.quoteChar, dmop.DatasetPhysicalProperty),
         (dmop.skipInitialSpace, dmop.DatasetPhysicalProperty),
+        (dmop.isTrainDataset, dmop.DatasetInfoProperty),
+        (dmop.isTestDataset, dmop.DatasetInfoProperty)
     ]
 
     for s, o in subproperties:

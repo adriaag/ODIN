@@ -36,7 +36,7 @@ def add_problems(cbox):
         cb.Normalization,
     ]
     subproblems = [
-        (cb.Description, [cb.Classification, cb.Clustering, cb.AnomalyDetection],),
+        (cb.Description, [cb.Classification, cb.Clustering, cb.AnomalyDetection, cb.DataVisualization],),
         (cb.DataCleaning, [cb.MissingValueManagement, cb.DuplicationRemoval, cb.Normalization],),
     ]
 
@@ -91,7 +91,6 @@ def add_algorithms(cbox):
         (cb.BarChart, cb.DataVisualization),
         (cb.ScatterPlot, cb.DataVisualization),
         (cb.LinePlot, cb.DataVisualization),
-        # (cb.DensityPlot, cb.DataVisualization),
         (cb.Histogram, cb.DataVisualization),
         (cb.HeatMap, cb.DataVisualization),
         
@@ -127,7 +126,7 @@ def add_models(cbox):
         'MissingValueModel',
     ]
 
-    cbox.add((cb.Model, RDFS.subClassOf, tb.Data)) ### ask and change accordingly
+    cbox.add((cb.Model, RDFS.subClassOf, tb.Data))
     for model in models:
         cbox.add((cb.term(model), RDFS.subClassOf, cb.Model))
 
@@ -194,6 +193,8 @@ def add_subproperties(cbox):
         (dmop.path, dmop.DatasetPhysicalProperty),
         (dmop.quoteChar, dmop.DatasetPhysicalProperty),
         (dmop.skipInitialSpace, dmop.DatasetPhysicalProperty),
+        (dmop.isTrainDataset, dmop.DatasetInfoProperty),
+        (dmop.isTestDataset, dmop.DatasetInfoProperty)
     ]
 
     for s, o in subproperties:
@@ -305,6 +306,7 @@ def add_shapes(cbox):
     cbox.add((numeric_tabular_dataset_shape, SH.targetClass, dmop.TabularDataset))
     cbox.add((numeric_tabular_dataset_shape, SH.property, bnode))
 
+    # NormalizedTabularDatasetShape 
     cbox.add((cb.isNormalizedConstraint, RDF.type, SH.PropertyConstraintComponent))
     cbox.add((cb.isNormalizedConstraint, SH.path, dmop.isNormalized))
     cbox.add((cb.isNormalizedConstraint, SH.datatype, XSD.boolean))
@@ -314,6 +316,37 @@ def add_shapes(cbox):
     cbox.add((cb.NormalizedTabularDatasetShape, RDF.type, tb.DataTag))
     cbox.add((cb.NormalizedTabularDatasetShape, SH.property, cb.isNormalizedConstraint))
     cbox.add((cb.NormalizedTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+    # NormalDistributionDatasetShape
+    cbox.add((cb.isNormalDistributionConstraint, RDF.type, SH.PropertyConstraintComponent))
+    cbox.add((cb.isNormalDistributionConstraint, SH.path, dmop.isNormalDistribution))
+    cbox.add((cb.isNormalDistributionConstraint, SH.datatype, XSD.string))
+    cbox.add((cb.isNormalDistributionConstraint, SH.hasValue, Literal("NormalDistribution")))
+
+    cbox.add((cb.NormalDistributionDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.NormalDistributionDatasetShape, RDF.type, tb.DataTag))
+    cbox.add((cb.NormalDistributionDatasetShape, SH.property, cb.isNormalDistributionConstraint))
+    cbox.add((cb.NormalDistributionDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+    # TrainTabularDatasetShape
+    cbox.add((cb.isTrainConstraint, RDF.type, SH.PropertyConstraintComponent))
+    cbox.add((cb.isTrainConstraint, SH.path, dmop.isTrainDataset))
+    cbox.add((cb.isTrainConstraint, SH.datatype, XSD.boolean))
+    cbox.add((cb.isTrainConstraint, SH.hasValue, Literal(True)))
+    cbox.add((cb.TrainTabularDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.TrainTabularDatasetShape, RDF.type, tb.DataTag))
+    cbox.add((cb.TrainTabularDatasetShape, SH.property, cb.isTrainConstraint))
+    cbox.add((cb.TrainTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+    # TestTabularDatasetShape
+    cbox.add((cb.isTestConstraint, RDF.type, SH.PropertyConstraintComponent))
+    cbox.add((cb.isTestConstraint, SH.path, dmop.isTestDataset))
+    cbox.add((cb.isTestConstraint, SH.datatype, XSD.boolean))
+    cbox.add((cb.isTestConstraint, SH.hasValue, Literal(True)))
+    cbox.add((cb.TestTabularDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.TestTabularDatasetShape, RDF.type, tb.DataTag))
+    cbox.add((cb.TestTabularDatasetShape, SH.property, cb.isTestConstraint))
+    cbox.add((cb.TestTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
 
 
 def main(dest='../modified-ontologies/cbox.ttl'):

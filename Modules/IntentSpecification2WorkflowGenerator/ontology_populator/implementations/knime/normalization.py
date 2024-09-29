@@ -1,4 +1,4 @@
-from .knime_implementation import KnimeImplementation, KnimeParameter, KnimeBaseBundle
+from .knime_implementation import KnimeImplementation, KnimeParameter, KnimeBaseBundle, KnimeDefaultFeature
 from ..core import *
 from common import *
 
@@ -21,6 +21,7 @@ normalizer_implementation = KnimeImplementation(
     implementation_type=tb.LearnerImplementation,
     knime_node_factory='org.knime.base.node.preproc.pmml.normalize.NormalizerPMMLNodeFactory2',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature,
 )
 
 min_max_scaling_component = Component(
@@ -79,6 +80,7 @@ z_score_scaling_component = Component(
     overriden_parameters=[
         ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 2),
     ],
+    preferences=[cb.NormalDistributionDatasetShape],
     transformations=[
         CopyTransformation(1, 1),
         Transformation(
@@ -166,7 +168,7 @@ normalizer_applier_implementation = KnimeImplementation(
     ],
     input=[
         cb.NormalizerModel,
-        cb.TabularDataset,
+        cb.TestTabularDatasetShape,
     ],
     output=[
         cb.NormalizerModel,
@@ -176,6 +178,7 @@ normalizer_applier_implementation = KnimeImplementation(
     counterpart=normalizer_implementation,
     knime_node_factory='org.knime.base.node.preproc.pmml.normalize.NormalizerPMMLApplyNodeFactory',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature,
 )
 
 normalizer_applier_component = Component(
@@ -244,7 +247,7 @@ WHERE {
     ]
 )
 
-"""
+
 min_max_scaling_applier_component = Component(
     name='Min-Max Scaling Applier',
     implementation=normalizer_applier_implementation,
@@ -370,4 +373,4 @@ INSERT DATA {
     ],
     counterpart=decimal_scaling_component,
 )
-"""
+

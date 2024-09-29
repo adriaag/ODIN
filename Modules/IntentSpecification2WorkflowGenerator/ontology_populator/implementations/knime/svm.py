@@ -1,5 +1,5 @@
 from common import *
-from .knime_implementation import KnimeImplementation, KnimeBaseBundle, KnimeParameter
+from .knime_implementation import KnimeImplementation, KnimeBaseBundle, KnimeParameter, KnimeDefaultFeature
 from ..core import *
 
 svm_learner_implementation = KnimeImplementation(
@@ -17,7 +17,7 @@ svm_learner_implementation = KnimeImplementation(
         KnimeParameter("Kernel type", XSD.string, None, 'kernel_type'),
     ],
     input=[
-        [cb.LabeledTabularDatasetShape, cb.NormalizedTabularDatasetShape, cb.NonNullTabularDatasetShape],
+        [cb.LabeledTabularDatasetShape, cb.TrainTabularDatasetShape, cb.NormalizedTabularDatasetShape, cb.NonNullTabularDatasetShape],
     ],
     output=[
         cb.SVMModel,
@@ -25,6 +25,7 @@ svm_learner_implementation = KnimeImplementation(
     implementation_type=tb.LearnerImplementation,
     knime_node_factory='org.knime.base.node.mine.svm.learner.SVMLearnerNodeFactory2',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature
 )
 
 polynomial_svm_learner_component = Component(
@@ -112,7 +113,7 @@ svm_predictor_implementation = KnimeImplementation(
     ],
     input=[
         cb.SVMModel,
-        [cb.NormalizedTabularDatasetShape, cb.NonNullTabularDatasetShape]
+        [cb.TestTabularDatasetShape, cb.NormalizedTabularDatasetShape, cb.NonNullTabularDatasetShape]
     ],
     output=[
         cb.LabeledTabularDatasetShape,
@@ -121,6 +122,7 @@ svm_predictor_implementation = KnimeImplementation(
     counterpart=svm_learner_implementation,
     knime_node_factory='org.knime.base.node.mine.svm.predictor2.SVMPredictorNodeFactory',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature,
 )
 
 svm_predictor_component = Component(

@@ -1,6 +1,6 @@
 from ontology_populator.implementations.core import *
 from common import *
-from ontology_populator.implementations.knime import KnimeImplementation, KnimeParameter, KnimeBaseBundle
+from ontology_populator.implementations.knime import KnimeImplementation, KnimeParameter, KnimeBaseBundle, KnimeDefaultFeature
 
 decision_tree_learner_implementation = KnimeImplementation(
     name='Decision Tree Learner',
@@ -25,7 +25,7 @@ decision_tree_learner_implementation = KnimeImplementation(
         KnimeParameter("Root split column", XSD.string, None, 'firstSplitColumn'),
     ],
     input=[
-        cb.LabeledTabularDatasetShape,
+        [cb.LabeledTabularDatasetShape, cb.TrainTabularDatasetShape]
     ],
     output=[
         cb.DecisionTreeModel,
@@ -33,6 +33,7 @@ decision_tree_learner_implementation = KnimeImplementation(
     implementation_type=tb.LearnerImplementation,
     knime_node_factory='org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature
 )
 
 decision_tree_learner_component = Component(
@@ -44,22 +45,22 @@ decision_tree_learner_component = Component(
     #     ParameterSpecification(parameter, parameter.default_value) for parameter in decision_tree_learner_implementation.parameters
     # ],
     exposed_parameters=[
-    list(decision_tree_learner_implementation.parameters.keys())[0],
-    list(decision_tree_learner_implementation.parameters.keys())[1],
-    list(decision_tree_learner_implementation.parameters.keys())[2],
-    list(decision_tree_learner_implementation.parameters.keys())[3],
-    list(decision_tree_learner_implementation.parameters.keys())[4],
-    list(decision_tree_learner_implementation.parameters.keys())[5],
-    list(decision_tree_learner_implementation.parameters.keys())[6],
-    list(decision_tree_learner_implementation.parameters.keys())[7],
-    list(decision_tree_learner_implementation.parameters.keys())[8],
-    list(decision_tree_learner_implementation.parameters.keys())[9],
-    list(decision_tree_learner_implementation.parameters.keys())[10],
-    list(decision_tree_learner_implementation.parameters.keys())[11],
-    list(decision_tree_learner_implementation.parameters.keys())[12],
-    list(decision_tree_learner_implementation.parameters.keys())[13],
-    list(decision_tree_learner_implementation.parameters.keys())[14],
-    list(decision_tree_learner_implementation.parameters.keys())[15],
+        list(decision_tree_learner_implementation.parameters.keys())[0],
+        list(decision_tree_learner_implementation.parameters.keys())[1],
+        list(decision_tree_learner_implementation.parameters.keys())[2],
+        list(decision_tree_learner_implementation.parameters.keys())[3],
+        list(decision_tree_learner_implementation.parameters.keys())[4],
+        list(decision_tree_learner_implementation.parameters.keys())[5],
+        list(decision_tree_learner_implementation.parameters.keys())[6],
+        list(decision_tree_learner_implementation.parameters.keys())[7],
+        list(decision_tree_learner_implementation.parameters.keys())[8],
+        list(decision_tree_learner_implementation.parameters.keys())[9],
+        list(decision_tree_learner_implementation.parameters.keys())[10],
+        list(decision_tree_learner_implementation.parameters.keys())[11],
+        list(decision_tree_learner_implementation.parameters.keys())[12],
+        list(decision_tree_learner_implementation.parameters.keys())[13],
+        list(decision_tree_learner_implementation.parameters.keys())[14],
+        list(decision_tree_learner_implementation.parameters.keys())[15],
     ]
 )
 
@@ -75,7 +76,7 @@ decision_tree_predictor_implementation = KnimeImplementation(
     ],
     input=[
         cb.DecisionTreeModel,
-        cb.TabularDataset,
+        cb.TestTabularDatasetShape,
     ],
     output=[
         cb.LabeledTabularDatasetShape,
@@ -84,6 +85,7 @@ decision_tree_predictor_implementation = KnimeImplementation(
     counterpart=decision_tree_learner_implementation,
     knime_node_factory='org.knime.base.node.mine.decisiontree2.predictor2.DecTreePredictorNodeFactory',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature
 )
 
 decision_tree_predictor_component = Component(

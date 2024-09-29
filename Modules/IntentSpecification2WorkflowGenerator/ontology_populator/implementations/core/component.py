@@ -9,15 +9,16 @@ from common import *
 from .implementation import Implementation
 from .transformation import Transformation
 from .parameter_specification import ParameterSpecification
-
-LiteralValue = Union[str, bool, int, float, None]
+from .parameter import Parameter
+import uuid
 
 
 class Component:
 
     def __init__(self, name: str, implementation: Implementation, transformations: List[Transformation],
-                 exposed_parameters: List[str] = None,
+                 exposed_parameters: List[Parameter] = None,
                  overriden_parameters: List[ParameterSpecification] = None,
+                 preferences: List[Union[URIRef, List[URIRef]]] = None,
                  counterpart: Union['Component', List['Component']] = None,
                  namespace: Namespace = cb) -> None:
         super().__init__()
@@ -29,6 +30,7 @@ class Component:
         self.transformations = transformations
         self.overriden_parameters = overriden_parameters if overriden_parameters is not None else []
         self.exposed_parameters = exposed_parameters if exposed_parameters is not None else []
+        self.preferences = preferences if preferences else []
         self.component_type = {
             tb.LearnerImplementation: tb.LearnerComponent,
             tb.ApplierImplementation: tb.ApplierComponent,
@@ -72,11 +74,34 @@ class Component:
             # g.add((parameter_value, tb.has_value, Literal(value)))
             # g.add((self.uri_ref, tb.overridesParameter, parameter_value))
         for para_spec in self.overriden_parameters:
-            g.add((self.uri_ref, tb.overrideParameter, para_spec.uri_ref))
+            g.add((para_spec.uri_ref, RDF.type, tb.ParameterSpecification))
+            # g.add((para_spec.uri_ref, RDFS.label, para_spec.url_name))
+            g.add((self.uri_ref, tb.overridesParameter, para_spec.uri_ref))
+            g.add((para_spec.parameter.uri_ref, tb.specifiedBy, para_spec.uri_ref))
+            if isinstance(para_spec.value, Literal):
+                g.add((para_spec.uri_ref, tb.hasValue, para_spec.value))
+            else:
+                g.add((para_spec.uri_ref, tb.hasValue, Literal(para_spec.value)))
+            # print(f'OVRDN: {self.url_name} --> {para_spec.url_name} --> {para_spec.value}')
 
         # Exposed parameters triples
         for parameter in self.exposed_parameters:
-            g.add((self.uri_ref, tb.exposesParameter, self.implementation.parameters[parameter].uri_ref))
+            g.add((self.uri_ref, tb.exposesParameter, parameter.uri_ref))
+
+
+        if isinstance(self.preferences, list):
+            if len(self.preferences) > 1:
+                preference_collection = BNode()
+                preference_shape = self.namespace.term(f'Shape_{uuid.uuid4()}')
+                Collection(g, preference_collection, self.preferences)
+                g.add((preference_shape, RDF.type, tb.DataTag))
+                g.add((preference_shape, RDF.type, SH.NodeShape))
+                g.add((preference_shape, SH['and'], preference_collection))
+                g.add((self.uri_ref, tb.hasPreference, preference_shape))
+            elif len(self.preferences) == 1:
+                g.add((self.uri_ref, tb.hasPreference, self.preferences[0]))
+        else:
+            g.add((self.uri_ref, tb.hasPreference, self.preferences))
 
         return self.uri_ref
 

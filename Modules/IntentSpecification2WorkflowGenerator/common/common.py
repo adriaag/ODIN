@@ -21,13 +21,16 @@ def get_graph_xp():
 def get_ontology_graph():
     graph = get_graph_xp()
     ontologies = [
+        # r'ontologies/tbox.ttl',
+        # r'ontologies/cbox.ttl',
+        # r'ontologies/abox.ttl',
         r'modified-ontologies/tbox.ttl',
         r'modified-ontologies/cbox.ttl',
         r'modified-ontologies/abox.ttl',
-        # r'dataset_annotator/penguins_annotated.ttl',
+        r'dataset_annotator/annotated_datasets/penguins_annotated.ttl',
         r'dataset_annotator/annotated_datasets/titanic_annotated.ttl',
         r'dataset_annotator/annotated_datasets/diabetes_annotated.ttl',
-        r'dataset_annotator/annotated_datasets/countries_annotated.ttl',
+        # r'dataset_annotator/annotated_datasets/countries_annotated.ttl',
     ]
     for o in ontologies:
         graph.parse(o, format="turtle")

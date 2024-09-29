@@ -1,15 +1,15 @@
 from common import *
 from ontology_populator.implementations.core import *
-from ontology_populator.implementations.knime import KnimeImplementation, KnimeParameter, KnimeBaseBundle
+from ontology_populator.implementations.knime import KnimeImplementation, KnimeParameter, KnimeBaseBundle, KnimeDefaultFeature
 
 csv_reader_implementation = KnimeImplementation(
     name='CSV Reader',
     algorithm=cb.DataLoading,
     parameters=[
-        KnimeParameter("File", XSD.string, '$$CSV_PATH$$', 'path', path='model/settings/file_selection/path'),
-        KnimeParameter("Location flag", XSD.boolean, True, 'location_present',
+        KnimeParameter("Reader File", XSD.string, '$$CSV_PATH$$', 'path', path='model/settings/file_selection/path'),
+        KnimeParameter("Reader Location flag", XSD.boolean, True, 'location_present',
                        path='model/settings/file_selection/path'),
-        KnimeParameter("Filesystem", XSD.string, None, 'file_system_type', path='model/settings/file_selection/path'),
+        KnimeParameter("Reader Filesystem", XSD.string, None, 'file_system_type', path='model/settings/file_selection/path'),
 
         KnimeParameter("FSI SettingsModelID", XSD.string, 'SMID_ReaderFileChooser', 'SettingsModelID',
                        path='model/settings/file_selection_Internals'),
@@ -132,8 +132,9 @@ csv_reader_implementation = KnimeImplementation(
     output=[
         cb.TabularDataset,
     ],
-    knime_node_factory='org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory',
-    knime_bundle=KnimeBaseBundle,
+    knime_node_factory = 'org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory',
+    knime_bundle = KnimeBaseBundle,
+    knime_feature = KnimeDefaultFeature
 )
 
 csv_reader_local_component = Component(
@@ -143,8 +144,10 @@ csv_reader_local_component = Component(
         LoaderTransformation(),
     ],
     overriden_parameters=[
-        ParameterSpecification(list(csv_reader_implementation.parameters.keys())[1], True),
-        ParameterSpecification(list(csv_reader_implementation.parameters.keys())[2], 'LOCAL'),
+        # ParameterSpecification(list(csv_reader_implementation.parameters.keys())[1], True),
+        # ParameterSpecification(list(csv_reader_implementation.parameters.keys())[2], 'LOCAL'),
+        ParameterSpecification([param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'location_present'][0], True),
+        ParameterSpecification([param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'file_system_type'][0], 'LOCAL')
     ],
     exposed_parameters=[
         list(csv_reader_implementation.parameters.keys())[0]
@@ -155,11 +158,11 @@ csv_writer_implementation = KnimeImplementation(
     name='CSV Writer',
     algorithm=cb.DataStoring,
     parameters=[
-        KnimeParameter('File', XSD.string, r'~\output.csv', 'path',
+        KnimeParameter('Writer File', XSD.string, r"/home/zyad/Desktop/output.csv", 'path',
                        path='model/settings/file_chooser_settings/path'),
-        KnimeParameter('Location flag', XSD.boolean, True, 'location_present',
+        KnimeParameter('Writer Location flag', XSD.boolean, True, 'location_present',
                        path='model/settings/file_chooser_settings/path'),
-        KnimeParameter('Filesystem', XSD.string, None, 'file_system_type',
+        KnimeParameter('Writer Filesystem', XSD.string, None, 'file_system_type',
                        path='model/settings/file_chooser_settings/path'),
 
         KnimeParameter('Create Missing Folders', XSD.boolean, True, 'create_missing_folders',
@@ -215,7 +218,7 @@ csv_writer_implementation = KnimeImplementation(
                        path='model/advanced_settings'),
         KnimeParameter('compress_with_gzip', XSD.boolean, False, 'compress_with_gzip',
                        path='model/advanced_settings'),
-        KnimeParameter('quote_mode', XSD.string, 'STRINGS_ONLY', 'quote_mode',
+        KnimeParameter('quote_mode', XSD.string, "STRINGS_ONLY", 'quote_mode',
                        path='model/advanced_settings'),
         KnimeParameter('separator_replacement', XSD.string, '', 'separator_replacement',
                        path='model/advanced_settings'),
@@ -246,8 +249,9 @@ csv_writer_implementation = KnimeImplementation(
     ],
     input=[cb.TabularDataset],
     output=[],
-    knime_node_factory='org.knime.base.node.io.filehandling.csv.writer.CSVWriter2NodeFactory',
-    knime_bundle=KnimeBaseBundle,
+    knime_node_factory = 'org.knime.base.node.io.filehandling.csv.writer.CSVWriter2NodeFactory',
+    knime_bundle = KnimeBaseBundle,
+    knime_feature = KnimeDefaultFeature
 )
 
 csv_writer_local_component = Component(
@@ -255,8 +259,10 @@ csv_writer_local_component = Component(
     implementation=csv_writer_implementation,
     transformations=[],
     overriden_parameters=[
-        ParameterSpecification(list(csv_reader_implementation.parameters.keys())[1], True),
-        ParameterSpecification(list(csv_reader_implementation.parameters.keys())[2], 'LOCAL'),
+        # ParameterSpecification(list(csv_writer_implementation.parameters.keys())[1], True),
+        # ParameterSpecification(list(csv_writer_implementation.parameters.keys())[2], 'LOCAL'),
+        ParameterSpecification([param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'location_present'][0], True),
+        ParameterSpecification([param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'file_system_type'][0], 'LOCAL')
     ],
     exposed_parameters=[
         list(csv_writer_implementation.parameters.keys())[0],

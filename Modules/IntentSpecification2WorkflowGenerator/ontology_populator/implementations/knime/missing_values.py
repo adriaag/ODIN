@@ -1,4 +1,4 @@
-from .knime_implementation import KnimeImplementation, KnimeParameter, KnimeBaseBundle
+from .knime_implementation import KnimeImplementation, KnimeParameter, KnimeBaseBundle, KnimeDefaultFeature
 from ..core import *
 from common import *
 
@@ -36,17 +36,18 @@ missing_value_implementation = KnimeImplementation(
     implementation_type=tb.LearnerImplementation,
     knime_node_factory='org.knime.base.node.preproc.pmml.missingval.compute.MissingValueHandlerNodeFactory',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature
 )
 
 mean_imputation_component = Component(
     name='Mean Imputation',
     implementation=missing_value_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(missing_value_implementation.parameters.values())[0],
+        ParameterSpecification(list(missing_value_implementation.parameters.keys())[0],
                                'org.knime.base.node.preproc.pmml.missingval.handlers.DoubleMeanMissingCellHandlerFactory'),
-        ParameterSpecification(list(missing_value_implementation.parameters.values())[2],
+        ParameterSpecification(list(missing_value_implementation.parameters.keys())[2],
                                'org.knime.base.node.preproc.pmml.missingval.handlers.DoubleMeanMissingCellHandlerFactory'),
-        ParameterSpecification(list(missing_value_implementation.parameters.values())[1],
+        ParameterSpecification(list(missing_value_implementation.parameters.keys())[1],
                                'org.knime.base.node.preproc.pmml.missingval.handlers.MostFrequentValueMissingCellHandlerFactory'),
     ],
     exposed_parameters=[],
@@ -69,11 +70,11 @@ drop_rows_component = Component(
     name='Drop Rows with Missing Values',
     implementation=missing_value_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(missing_value_implementation.parameters.values())[0],
+        ParameterSpecification(list(missing_value_implementation.parameters.keys())[0],
                                'org.knime.base.node.preproc.pmml.missingval.pmml.RemoveRowMissingCellHandlerFactory'),
-        ParameterSpecification(list(missing_value_implementation.parameters.values())[2],
+        ParameterSpecification(list(missing_value_implementation.parameters.keys())[2],
                                'org.knime.base.node.preproc.pmml.missingval.pmml.RemoveRowMissingCellHandlerFactory'),
-        ParameterSpecification(list(missing_value_implementation.parameters.values())[1],
+        ParameterSpecification(list(missing_value_implementation.parameters.keys())[1],
                                'org.knime.base.node.preproc.pmml.missingval.pmml.RemoveRowMissingCellHandlerFactory'),
     ],
     exposed_parameters=[],
@@ -116,7 +117,7 @@ missing_value_applier_implementation = KnimeImplementation(
     ],
     input=[
         cb.MissingValueModel,
-        cb.TabularDataset,
+        cb.TestTabularDatasetShape,
     ],
     output=[
         cb.NonNullTabularDatasetShape,
@@ -124,6 +125,7 @@ missing_value_applier_implementation = KnimeImplementation(
     implementation_type=tb.ApplierImplementation,
     knime_node_factory='org.knime.base.node.preproc.pmml.missingval.apply.MissingValueApplyNodeFactory',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature,
 )
 
 missing_value_applier_component = Component(

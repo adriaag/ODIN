@@ -62,11 +62,11 @@ class Implementation:
                     g.add((input_shape, RDF.type, tb.DataTag))
                     g.add((input_shape, RDF.type, SH.NodeShape))
                     g.add((input_shape, SH['and'], input_collection))
-                    g.add((input_node, tb.hasTag, input_shape))
+                    g.add((input_node, tb.hasDatatag, input_shape))
                 else:
-                    g.add((input_node, tb.hasTag, input_tag[0]))
+                    g.add((input_node, tb.hasDatatag, input_tag[0]))
             else:
-                g.add((input_node, tb.hasTag, input_tag))
+                g.add((input_node, tb.hasDatatag, input_tag))
 
         # Output triples
         for i, output_tag in enumerate(self.output):
@@ -80,13 +80,13 @@ class Implementation:
         for i, parameter in enumerate(self.parameters.values()):
             g.add((parameter.uri_ref, RDF.type, tb.Parameter))
             g.add((parameter.uri_ref, RDFS.label, Literal(parameter.label)))
-            g.add((parameter.uri_ref, tb.hasDatatype, parameter.datatype))
+            g.add((parameter.uri_ref, tb.has_datatype, parameter.datatype))
             g.add((parameter.uri_ref, tb.has_position, Literal(i)))
             g.add((parameter.uri_ref, tb.has_condition, Literal(parameter.condition)))
             if isinstance(parameter.default_value, URIRef):
-                g.add((parameter.uri_ref, tb.hasDefaultValue, parameter.default_value))
+                g.add((parameter.uri_ref, tb.has_defaultvalue, parameter.default_value))
             else:
-                g.add((parameter.uri_ref, tb.hasDefaultValue, Literal(parameter.default_value)))
+                g.add((parameter.uri_ref, tb.has_defaultvalue, Literal(parameter.default_value)))
             g.add((self.uri_ref, tb.hasParameter, parameter.uri_ref))
 
         return self.uri_ref

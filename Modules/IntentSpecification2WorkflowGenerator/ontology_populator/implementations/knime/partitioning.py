@@ -1,13 +1,13 @@
 from common import *
-from .knime_implementation import KnimeBaseBundle, KnimeParameter, KnimeImplementation
+from .knime_implementation import KnimeBaseBundle, KnimeParameter, KnimeImplementation, KnimeDefaultFeature
 from ..core import *
 
 partitioning_implementation = KnimeImplementation(
-    name='Partitioning',
-    algorithm=cb.Partitioning,
+    name='Train Test Split',
+    algorithm=cb.TrainTestSplit,
     parameters=[
-        KnimeParameter("Size of First Partition", XSD.string, "Relative", "method"),
-        KnimeParameter("Sampling Method", XSD.string, "Random", "samplingMethod"),
+        KnimeParameter("Size of First Partition", XSD.string, None, "method"),
+        KnimeParameter("Sampling Method", XSD.string, None, "samplingMethod"),
         KnimeParameter("Fraction (Relative size)", XSD.double, 0.8, "fraction"),
         KnimeParameter("Count (Absolute size)", XSD.int, 100, "count"),
         KnimeParameter("Random seed", XSD.string, None, "random_seed"),
@@ -17,12 +17,15 @@ partitioning_implementation = KnimeImplementation(
         cb.TabularDataset,
     ],
     output=[
-        cb.TrainDataset,
-        cb.TestDataset,
+        cb.TrainTabularDatasetShape,
+        cb.TestTabularDatasetShape,
     ],
     knime_node_factory='org.knime.base.node.preproc.partition.PartitionNodeFactory',
     knime_bundle=KnimeBaseBundle,
+    knime_feature=KnimeDefaultFeature
 )
+
+implementation_parameters = partitioning_implementation.parameters
 
 random_relative_train_test_split_component = Component(
     name='Random Relative Train-Test Split',
@@ -30,12 +33,12 @@ random_relative_train_test_split_component = Component(
     overriden_parameters=[
         # ("Size of First Partition", "Relative"),
         # ("Sampling Method", "Random"),
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[0], list(partitioning_implementation.parameters.values())[0].default_value),
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[1], list(partitioning_implementation.parameters.values())[1].default_value)
+        ParameterSpecification(list(implementation_parameters.keys())[0], "Relative"),
+        ParameterSpecification(list(implementation_parameters.keys())[1], "Random")
     ],
     exposed_parameters=[
-        list(partitioning_implementation.parameters.keys())[2],
-        list(partitioning_implementation.parameters.keys())[4],
+        list(implementation_parameters.keys())[2],
+        list(implementation_parameters.keys())[4],
     ],
     transformations=[
         CopyTransformation(1, 1),
@@ -48,7 +51,9 @@ DELETE {
 }
 INSERT {
     $output1 dmop:numberOfRows ?newRows1 .
+    $output1 dmop:isTrainDataset True .
     $output2 dmop:numberOfRows ?newRows2 .
+    $output2 dmop:isTestDataset True .
 }
 WHERE {
     $output1 dmop:numberOfRows ?rows1.
@@ -64,12 +69,12 @@ random_absolute_train_test_split_component = Component(
     name='Random Absolute Train-Test Split',
     implementation=partitioning_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[0], "Absolute"),
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[1], "Random")
+        ParameterSpecification(list(implementation_parameters.keys())[0], "Absolute"),
+        ParameterSpecification(list(implementation_parameters.keys())[1], "Random")
     ],
     exposed_parameters=[
-        list(partitioning_implementation.parameters.keys())[3],
-        list(partitioning_implementation.parameters.keys())[4],
+        list(implementation_parameters.keys())[3],
+        list(implementation_parameters.keys())[4],
     ],
     transformations=[
         CopyTransformation(1, 1),
@@ -82,7 +87,9 @@ DELETE {
 }
 INSERT {
     $output1 dmop:numberOfRows ?newRows1 .
+    $output1 dmop:isTrainDataset True .
     $output2 dmop:numberOfRows ?newRows2 .
+    $output2 dmop:isTestDataset True .
 }
 WHERE {
     $output1 dmop:numberOfRows ?rows1.
@@ -98,11 +105,11 @@ top_relative_train_test_split_component = Component(
     name='Top K Relative Train-Test Split',
     implementation=partitioning_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[0], "Relative"),
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[1], "First"),
+        ParameterSpecification(list(implementation_parameters.keys())[0], "Relative"),
+        ParameterSpecification(list(implementation_parameters.keys())[1], "First"),
     ],
     exposed_parameters=[
-        list(partitioning_implementation.parameters.keys())[2],
+        list(implementation_parameters.keys())[2],
     ],
     transformations=[
         CopyTransformation(1, 1),
@@ -115,7 +122,9 @@ DELETE {
 }
 INSERT {
     $output1 dmop:numberOfRows ?newRows1 .
+    $output1 dmop:isTrainDataset True .
     $output2 dmop:numberOfRows ?newRows2 .
+    $output2 dmop:isTestDataset True .
 }
 WHERE {
     $output1 dmop:numberOfRows ?rows1.
@@ -131,11 +140,11 @@ top_absolute_train_test_split_component = Component(
     name='Top K Absolute Train-Test Split',
     implementation=partitioning_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[0], "Absolute"),
-        ParameterSpecification(list(partitioning_implementation.parameters.values())[1], "First"),
+        ParameterSpecification(list(implementation_parameters.keys())[0], "Absolute"),
+        ParameterSpecification(list(implementation_parameters.keys())[1], "First"),
     ],
     exposed_parameters=[
-        list(partitioning_implementation.parameters.keys())[3],
+        list(implementation_parameters.keys())[3],
     ],
     transformations=[
         CopyTransformation(1, 1),
@@ -148,7 +157,9 @@ DELETE {
 }
 INSERT {
     $output1 dmop:numberOfRows ?newRows1 .
+    $output1 dmop:isTrainDataset True .
     $output2 dmop:numberOfRows ?newRows2 .
+    $output2 dmop:isTestDataset True .
 }
 WHERE {
     $output1 dmop:numberOfRows ?rows1.
