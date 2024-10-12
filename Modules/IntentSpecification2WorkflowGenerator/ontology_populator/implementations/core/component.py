@@ -18,7 +18,7 @@ class Component:
     def __init__(self, name: str, implementation: Implementation, transformations: List[Transformation],
                  exposed_parameters: List[Parameter] = None,
                  overriden_parameters: List[ParameterSpecification] = None,
-                 preferences: List[Union[URIRef, List[URIRef]]] = None,
+                 rules: List[Union[URIRef, List[URIRef]]] = None,
                  counterpart: Union['Component', List['Component']] = None,
                  namespace: Namespace = cb) -> None:
         super().__init__()
@@ -30,7 +30,7 @@ class Component:
         self.transformations = transformations
         self.overriden_parameters = overriden_parameters if overriden_parameters is not None else []
         self.exposed_parameters = exposed_parameters if exposed_parameters is not None else []
-        self.preferences = preferences if preferences else []
+        self.rules = rules if rules else []
         self.component_type = {
             tb.LearnerImplementation: tb.LearnerComponent,
             tb.ApplierImplementation: tb.ApplierComponent,
@@ -89,19 +89,19 @@ class Component:
             g.add((self.uri_ref, tb.exposesParameter, parameter.uri_ref))
 
 
-        if isinstance(self.preferences, list):
-            if len(self.preferences) > 1:
+        if isinstance(self.rules, list):
+            if len(self.rules) > 1:
                 preference_collection = BNode()
                 preference_shape = self.namespace.term(f'Shape_{uuid.uuid4()}')
-                Collection(g, preference_collection, self.preferences)
+                Collection(g, preference_collection, self.rules)
                 g.add((preference_shape, RDF.type, tb.DataTag))
                 g.add((preference_shape, RDF.type, SH.NodeShape))
                 g.add((preference_shape, SH['and'], preference_collection))
                 g.add((self.uri_ref, tb.hasPreference, preference_shape))
-            elif len(self.preferences) == 1:
-                g.add((self.uri_ref, tb.hasPreference, self.preferences[0]))
+            elif len(self.rules) == 1:
+                g.add((self.uri_ref, tb.hasPreference, self.rules[0]))
         else:
-            g.add((self.uri_ref, tb.hasPreference, self.preferences))
+            g.add((self.uri_ref, tb.hasPreference, self.rules))
 
         return self.uri_ref
 

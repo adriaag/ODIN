@@ -317,22 +317,12 @@ def add_shapes(cbox):
     cbox.add((cb.NormalizedTabularDatasetShape, SH.property, cb.isNormalizedConstraint))
     cbox.add((cb.NormalizedTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
 
-    # NormalDistributionDatasetShape
-    cbox.add((cb.isNormalDistributionConstraint, RDF.type, SH.PropertyConstraintComponent))
-    cbox.add((cb.isNormalDistributionConstraint, SH.path, dmop.isNormalDistribution))
-    cbox.add((cb.isNormalDistributionConstraint, SH.datatype, XSD.string))
-    cbox.add((cb.isNormalDistributionConstraint, SH.hasValue, Literal("NormalDistribution")))
-
-    cbox.add((cb.NormalDistributionDatasetShape, RDF.type, SH.NodeShape))
-    cbox.add((cb.NormalDistributionDatasetShape, RDF.type, tb.DataTag))
-    cbox.add((cb.NormalDistributionDatasetShape, SH.property, cb.isNormalDistributionConstraint))
-    cbox.add((cb.NormalDistributionDatasetShape, SH.targetClass, dmop.TabularDataset))
-
     # TrainTabularDatasetShape
     cbox.add((cb.isTrainConstraint, RDF.type, SH.PropertyConstraintComponent))
     cbox.add((cb.isTrainConstraint, SH.path, dmop.isTrainDataset))
     cbox.add((cb.isTrainConstraint, SH.datatype, XSD.boolean))
     cbox.add((cb.isTrainConstraint, SH.hasValue, Literal(True)))
+
     cbox.add((cb.TrainTabularDatasetShape, RDF.type, SH.NodeShape))
     cbox.add((cb.TrainTabularDatasetShape, RDF.type, tb.DataTag))
     cbox.add((cb.TrainTabularDatasetShape, SH.property, cb.isTrainConstraint))
@@ -343,10 +333,101 @@ def add_shapes(cbox):
     cbox.add((cb.isTestConstraint, SH.path, dmop.isTestDataset))
     cbox.add((cb.isTestConstraint, SH.datatype, XSD.boolean))
     cbox.add((cb.isTestConstraint, SH.hasValue, Literal(True)))
+
     cbox.add((cb.TestTabularDatasetShape, RDF.type, SH.NodeShape))
     cbox.add((cb.TestTabularDatasetShape, RDF.type, tb.DataTag))
     cbox.add((cb.TestTabularDatasetShape, SH.property, cb.isTestConstraint))
     cbox.add((cb.TestTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+
+    ####################################################################################################################
+
+    # NormalDistributionDatasetShape
+    cbox.add((cb.isNormalDistributionConstraint, RDF.type, SH.PropertyConstraintComponent))
+    cbox.add((cb.isNormalDistributionConstraint, SH.path, dmop.isNormallyDistributed))
+    cbox.add((cb.isNormalDistributionConstraint, SH.datatype, XSD.boolean))  
+    cbox.add((cb.isNormalDistributionConstraint, SH.hasValue, Literal(True)))  
+
+    cbox.add((cb.NormalDistributionDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.NormalDistributionDatasetShape, RDF.type, tb.DataTag))
+    cbox.add((cb.NormalDistributionDatasetShape, SH.property, cb.isNormalDistributionConstraint))
+    cbox.add((cb.NormalDistributionDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+    
+    # NotOutlieredDatasetShape
+    cbox.add((cb.hasNoOutliersConstraint, RDF.type, SH.PropertyConstraintComponent))
+    cbox.add((cb.hasNoOutliersConstraint, SH.path, dmop.containsOutliers))
+    cbox.add((cb.hasNoOutliersConstraint, SH.datatype, XSD.boolean))  
+    cbox.add((cb.hasNoOutliersConstraint, SH.hasValue, Literal(False)))
+
+    cbox.add((cb.NotOutlieredDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.NotOutlieredDatasetShape, RDF.type, tb.DataTag))
+    cbox.add((cb.NotOutlieredDatasetShape, SH.property, cb.hasNoOutliersConstraint))
+    cbox.add((cb.NotOutlieredDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+
+    # IntegerTabularDatasetShape
+    cbox.add((cb.integerTypeConstraint, RDF.type, SH.PropertyShape))
+    cbox.add((cb.integerTypeConstraint, SH.path, dmop.hasDataPrimitiveTypeColumn))
+    cbox.add((cb.integerTypeConstraint, SH.hasValue, dmop.Integer))
+
+    cbox.add((cb.floatTypeConstraint, RDF.type, SH.PropertyShape))
+    cbox.add((cb.floatTypeConstraint, SH.path, dmop.hasDataPrimitiveTypeColumn))
+    cbox.add((cb.floatTypeConstraint, SH.hasValue, dmop.Float))
+
+    cbox.add((cb.hasIntegerColumn, RDF.type, SH.PropertyShape))
+    cbox.add((cb.hasIntegerColumn, SH.path, dmop.hasColumn))
+    cbox.add((cb.hasIntegerColumn, SH.qualifiedValueShape, cb.integerTypeConstraint))
+    cbox.add((cb.hasIntegerColumn, SH.qualifiedMinCount, Literal(1)))
+
+    cbox.add((cb.hasFloatColumn, RDF.type, SH.PropertyShape))
+    cbox.add((cb.hasFloatColumn, SH.path, dmop.hasColumn))
+    cbox.add((cb.hasFloatColumn, SH.qualifiedValueShape, cb.floatTypeConstraint))
+    cbox.add((cb.hasFloatColumn, SH.qualifiedMaxCount, Literal(0)))
+
+    cbox.add((cb.IntegerTabularDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.IntegerTabularDatasetShape, SH.property, cb.hasIntegerColumn))
+    cbox.add((cb.IntegerTabularDatasetShape, SH.property, cb.hasFloatColumn))
+    cbox.add((cb.IntegerTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+    # FloatTabularDatasetShape
+    cbox.add((cb.integerTypeConstraint, RDF.type, SH.PropertyShape))
+    cbox.add((cb.integerTypeConstraint, SH.path, dmop.hasDataPrimitiveTypeColumn))
+    cbox.add((cb.integerTypeConstraint, SH.hasValue, dmop.Integer))
+
+    cbox.add((cb.floatTypeConstraint, RDF.type, SH.PropertyShape))
+    cbox.add((cb.floatTypeConstraint, SH.path, dmop.hasDataPrimitiveTypeColumn))
+    cbox.add((cb.floatTypeConstraint, SH.hasValue, dmop.Float))
+
+    cbox.add((cb.hasIntegerColumn, RDF.type, SH.PropertyShape))
+    cbox.add((cb.hasIntegerColumn, SH.path, dmop.hasColumn))
+    cbox.add((cb.hasIntegerColumn, SH.qualifiedValueShape, cb.integerTypeConstraint))
+    cbox.add((cb.hasIntegerColumn, SH.qualifiedMaxCount, Literal(0)))
+
+    cbox.add((cb.hasFloatColumn, RDF.type, SH.PropertyShape))
+    cbox.add((cb.hasFloatColumn, SH.path, dmop.hasColumn))
+    cbox.add((cb.hasFloatColumn, SH.qualifiedValueShape, cb.floatTypeConstraint))
+    cbox.add((cb.hasFloatColumn, SH.qualifiedMinCount, Literal(1)))
+
+    cbox.add((cb.FloatTabularDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.FloatTabularDatasetShape, SH.property, cb.hasIntegerColumn))
+    cbox.add((cb.FloatTabularDatasetShape, SH.property, cb.hasFloatColumn))
+    cbox.add((cb.FloatTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+    # ZScoreNormalizedTabularDatasetShape
+    # cbox.add((cb.zscoreNormalizationConstraint, RDF.type, SH.PropertyShape))
+    # cbox.add((cb.zscoreNormalizationConstraint, SH.path, dmop.hasMaxValue)) 
+
+    # cbox.add((cb.hasNormalizedColumn, RDF.type, SH.PropertyShape))
+    # cbox.add((cb.hasNormalizedColumn, SH.path, dmop.hasColumn))
+    # cbox.add((cb.hasNormalizedColumn, SH.qualifiedValueShape, cb.zscoreNormalizationConstraint))
+    # cbox.add((cb.hasIntegerColumn, SH.qualifiedMinCount, Literal(1)))
+
+    # cbox.add((cb.ZScoreNormalizedTabularDatasetShape, RDF.type, SH.NodeShape))
+    # cbox.add((cb.ZScoreNormalizedTabularDatasetShape, SH.property, cb.hasNormalizedColumn))
+    # cbox.add((cb.ZScoreNormalizedTabularDatasetShape, SH.targetClass, dmop.TabularDataset))    
+
+
 
 
 def main(dest='../modified-ontologies/cbox.ttl'):

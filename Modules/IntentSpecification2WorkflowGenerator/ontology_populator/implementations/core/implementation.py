@@ -51,7 +51,7 @@ class Implementation:
         # Input triples
         for i, input_tag in enumerate(self.input):
             input_node = BNode()
-            g.add((input_node, RDF.type, tb.DataSpec))
+            g.add((input_node, RDF.type, tb.DataSpec)) ### Changed thiss during experimentation
             g.add((self.uri_ref, tb.specifiesInput, input_node))
             g.add((input_node, tb.has_position, Literal(i)))
             if isinstance(input_tag, list):
@@ -71,7 +71,7 @@ class Implementation:
         # Output triples
         for i, output_tag in enumerate(self.output):
             output_node = BNode()
-            g.add((output_node, RDF.type, tb.DataSpec))
+            g.add((output_node, RDF.type, tb.DataSpec)) ### Changed thiss during experimentation
             g.add((self.uri_ref, tb.specifiesOutput, output_node))
             g.add((output_node, tb.hasDatatag, output_tag))
             g.add((output_node, tb.has_position, Literal(i)))

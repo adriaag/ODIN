@@ -5,6 +5,8 @@ import time
 import uuid
 from datetime import datetime
 from typing import Tuple, Any, List, Dict, Optional, Union, Set, Type
+import random
+import math
 
 from pyshacl import validate
 from tqdm import tqdm
@@ -280,7 +282,9 @@ def identify_visual_io(ontology: Graph, ios: List[List[URIRef]], return_index: b
                 return i if return_index else io_shapes
 
 def satisfies_shape(data_graph: Graph, shacl_graph: Graph, shape: URIRef, focus: URIRef) -> bool:
+    # print(f'SHAPE: {shape.n3()}')
     conforms, g, report = validate(data_graph, shacl_graph=shacl_graph, validate_shapes=[shape], focus=focus)
+    # print(f'REPORT: {report}')
     return conforms
 
 def get_shape_target_class(ontology: Graph, shape: URIRef) -> URIRef:
@@ -364,6 +368,23 @@ def get_component_parameters(ontology: Graph, component: URIRef) -> Dict[URIRef,
     # print(f"AIMPL PARAMS: {implementation_params}")
     return component_params
 
+def test_function(ontology: Graph, component: URIRef):
+    test_query = f"""
+
+        PREFIX tb:<{tb}>
+        SELECT ?component ?parameterSpec ?parameter ?parameterValue ?position
+        WHERE{{
+            BIND({component.n3()} AS ?component)
+            ?component tb:overridesParameter ?parameterSpec .
+            ?parameterSpec tb:hasValue ?parameterValue .
+            ?parameter tb:specifiedBy ?parameterSpec ;
+                       tb:has_position ?position .
+        }}
+    """
+    results = ontology.query(test_query).bindings
+    # print(f"TEST: {component.n3()} ---> {results}")
+    # print(f"RESULTS: {results}")
+
 
 def get_component_overridden_paramspecs(ontology: Graph, workflow_graph: Graph, component: URIRef) -> Dict[URIRef, Tuple[URIRef, Literal]]:
     paramspecs_query = f"""
@@ -394,8 +415,8 @@ def get_component_overridden_paramspecs(ontology: Graph, workflow_graph: Graph, 
     return overridden_paramspecs
 
 
-def perform_param_substitution(graph: Graph, implementation: URIRef, parameters: Dict[URIRef, Tuple[Literal, Literal, Literal]],
-                               inputs: List[URIRef], vis_necessities: Dict[str, List[str]] = None) -> Dict[URIRef, Tuple[Literal, Literal, Literal]]:
+def perform_param_substitution(graph: Graph, parameters: Dict[URIRef, Tuple[Literal, Literal, Literal]],
+                               inputs: List[URIRef], vis_necessities: Dict[str, List[str]] = None, implementation: URIRef = None, ) -> Dict[URIRef, Tuple[Literal, Literal, Literal]]:
     
     keys = list(parameters.keys())
     for param in keys:
@@ -747,8 +768,60 @@ PREFIX dmop: <{dmop}>
             workflow_graph.update(query)
 
 
-def get_step_name(workflow_name: str, task_order: int, component: URIRef) -> str:
-    return f'{workflow_name}-step_{task_order}_{component.fragment.replace("-", "_")}'
+def retreive_component_rules(graph: Graph, component: URIRef):
+    preference_query = f"""
+        PREFIX rdfs: <{RDFS}>
+
+        SELECT ?datatag
+        WHERE {{
+            {component.n3()} tb:hasPreference ?datatag .
+        }}
+    """
+    preferences = graph.query(preference_query).bindings
+
+    return [pref['datatag'] for pref in preferences]
+
+
+def get_best_components(graph: Graph, components: List[URIRef], dataset: URIRef):
+
+    preferred_components = {}
+    sorted_components = {}
+    for component in components:
+        
+        component_preferences = retreive_component_rules(graph, component)
+        count = 0
+
+        preferred_components[component] = count
+
+        for pref in component_preferences:
+            if satisfies_shape(graph, graph, pref, dataset):
+                count+=1
+            else:
+                count+=-1
+                
+            preferred_components[component] = count
+        
+    # print(f'BEFORE SORTING: {preferred_components}')
+    sorted_preferred = sorted(preferred_components.items(), key=lambda x: x[1], reverse=True)
+
+    if len(sorted_preferred) > 0: ### there are multiple components to choose from
+        best_scores = set([comp[1] for comp in sorted_preferred])
+        if len(best_scores) > 1: ### checking if all there is at least one superior component
+            sorted_preferred = [x for x in sorted_preferred if x[1] >= sorted_preferred[0][1]]
+        else:
+            sorted_preferred = random.sample(sorted_preferred, 1)
+
+    for comp, rules_nbr in sorted_preferred:
+        sorted_components[comp] = rules_nbr 
+    # print(f'AFTER SORTING: {sorted_components}')
+
+    return sorted_components
+
+    
+
+
+def get_step_name(workflow_name: str, task_order: int, implementation: URIRef) -> str:
+    return f'{workflow_name}-step_{task_order}_{implementation.fragment.replace("-", "_")}'
 
 
 def add_loader_step(ontology: Graph, workflow_graph: Graph, workflow: URIRef, dataset_node: URIRef) -> URIRef:
@@ -758,25 +831,12 @@ def add_loader_step(ontology: Graph, workflow_graph: Graph, workflow: URIRef, da
     loader_parameters = get_component_parameters(ontology, loader_component)
     loader_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, loader_component)
     # loader_overridden_parameters = get_component_overriden_parameters(ontology, loader_component)
-    loader_parameters = perform_param_substitution(workflow_graph, None, loader_parameters, [dataset_node])
+    loader_parameters = perform_param_substitution(graph=workflow_graph, parameters=loader_parameters, inputs=[dataset_node])
     # loader_parameters.update(loader_overridden_parameters)
     loader_param_specs = assign_to_parameter_specs(workflow_graph, loader_parameters)
     loader_param_specs.update(loader_overridden_paramspecs)
     return add_step(workflow_graph, workflow, loader_step_name, loader_component, loader_param_specs, 0, None, None,
                     [dataset_node])
-
-### Basic Form for the General Workflow Generation
-def join_dicts(params: Dict[URIRef, Tuple[Literal, Literal, Literal]], 
-               param_specs: Dict[URIRef, Tuple[URIRef, Literal]]) -> Dict[URIRef, Tuple[URIRef, Literal, Literal]]:
-    joined_dict = {}
-    
-    for param, (_, literal2, _) in params.items():
-        for spec, (ref, literal) in param_specs.items():
-            if param == ref:
-                joined_dict[spec] = (param, literal, literal2)
-
-    return joined_dict
-
 
 
 def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef, main_component: URIRef,
@@ -812,6 +872,7 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
         if not test_component:
             
             singular_component = train_component
+            test_function(ontology, singular_component)
             singular_step_name = get_step_name(workflow_name, task_order, singular_component)
             singular_component_implementation = get_component_implementation(ontology, singular_component)
             singular_input_specs = get_implementation_input_specs(ontology, singular_component_implementation)
@@ -874,6 +935,8 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
 
             train_step_name = get_step_name(workflow_name, task_order, train_component)
 
+            test_function(ontology, train_component)
+
             train_component_implementation = get_component_implementation(ontology, train_component)
 
             train_input_specs = get_implementation_input_specs(ontology, train_component_implementation)
@@ -929,6 +992,8 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             if test_dataset_node is not None:
 
                 test_step_name = get_step_name(workflow_name, task_order, test_component)
+
+                test_function(ontology, test_component)
 
                 test_input_specs = get_implementation_input_specs(ontology,
                                                                 get_component_implementation(ontology, test_component))
@@ -988,7 +1053,7 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
         # saver_overridden_parameters = get_component_overriden_parameters(ontology, saver_component)
         saver_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, saver_component)
         # saver_parameters.update(saver_overridden_parameters)
-        print(f'SAVE: {saver_component}: {saver_parameters}')
+        # print(f'SAVE: {saver_component}: {saver_parameters}')
         saver_param_specs = assign_to_parameter_specs(workflow_graph, saver_parameters)
         saver_param_specs.update(saver_overridden_paramspecs)
         # saver_params_merged = join_dicts(saver_parameters, saver_param_specs)
@@ -1002,7 +1067,6 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
                 previous_test_step, [test_dataset_node], [])
 
     return workflow_graph, workflow
-
 
 
 def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: str, log: bool = False) -> None:
@@ -1090,6 +1154,11 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
         for impl, inputs in impls
         for c in get_implementation_components(ontology, impl)
     ]
+
+    # for i, (com, imp, inp) in enumerate(components):
+    #     print(f'{i}: {com}, {imp}, {inp}')
+    # print('-----------------------------------------------------')
+
     if log:
         for component, implementation, inputs in components:
             tqdm.write(f'Component: {component.fragment} ({implementation.fragment})')
@@ -1116,15 +1185,25 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
         }
         print(f'AVAILABLE TRANSFORMATIONS: {available_transformations}')
 
+        for tr, methods in available_transformations.items():
+            # print(f'Possible Components for {tr} --> {methods}')
+            best_components = get_best_components(ontology, methods, dataset)
+
+            # print(f'PREFERRED COMPONENTS: {best_components}')
+
+            available_transformations[tr] = list(best_components.keys())
+
+        print(f'REFINED TRANSFORMATIONS: {available_transformations}')
+                    
+
+
         if log:
             tqdm.write(f'\tUnsatisfied shapes: ')
             for shape, transformations in available_transformations.items():
                 tqdm.write(f'\t\t{shape.fragment}: {[x.fragment for x in transformations]}')
 
         transformation_combinations = list(
-            # enumerate(list(itertools.product(split_components, *available_transformations.values())) + [()] + [(transfomation,) for transfomation in itertools.chain(*available_transformations.values())]))
             enumerate(itertools.product(*available_transformations.values())))
-            # enumerate(itertools.product(split_components, *available_transformations.values())))
             
         # TODO - check if the combination is valid and whether further transformations are needed
 
@@ -1191,4 +1270,4 @@ def interactive():
     print(f'Workflows saved in {folder}')
 
 
-interactive()
+# interactive()

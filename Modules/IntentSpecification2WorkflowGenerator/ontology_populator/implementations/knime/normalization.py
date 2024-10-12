@@ -30,6 +30,7 @@ min_max_scaling_component = Component(
     overriden_parameters=[
         ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 1),
     ],
+    rules=[cb.NotOutlieredDatasetShape],
     exposed_parameters=[
         list(normalizer_implementation.parameters.keys())[1],
         list(normalizer_implementation.parameters.keys())[2],
@@ -80,7 +81,7 @@ z_score_scaling_component = Component(
     overriden_parameters=[
         ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 2),
     ],
-    preferences=[cb.NormalDistributionDatasetShape],
+    rules=[cb.NormalDistributionDatasetShape],
     transformations=[
         CopyTransformation(1, 1),
         Transformation(
@@ -125,6 +126,7 @@ decimal_scaling_component = Component(
     overriden_parameters=[
         ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 3),
     ],
+    rules=[cb.IntegerTabularDatasetShape],
     transformations=[
         CopyTransformation(1, 1),
         Transformation(

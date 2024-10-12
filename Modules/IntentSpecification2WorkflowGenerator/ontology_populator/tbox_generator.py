@@ -183,7 +183,7 @@ def add_properties(ontology: Graph):
         (tb.hasApplier, tb.LearnerComponent, tb.ApplierComponent),
         (tb.hasVisualizer, tb.LearnerComponent, tb.VisualizerComponent),
         (tb.hasLearner, tb.VisualizerComponent, tb.LearnerComponent),
-        (tb.hasPreference, tb.Component, tb.DataTag),
+        (tb.hasRule, tb.Component, tb.DataTag),
         # Step
         (tb.followedBy, tb.Step, tb.Step),
         (tb.hasInput, tb.Step, tb.Data),
@@ -248,6 +248,7 @@ def add_properties(ontology: Graph):
         (dmop.hasMaxValue, dmop.ColumnValueInfoProperty),
         (dmop.hasMinValue, dmop.ColumnValueInfoProperty),
         (dmop.isNormalDistribution, dmop.ColumnInfoProperty),
+        (dmop.hasOutliers, dmop.ColumnInfoProperty),
 
         # Dataset
         (dmop.delimiter, dmop.DatasetPhysicalProperty),
@@ -263,7 +264,9 @@ def add_properties(ontology: Graph):
         (dmop.quoteChar, dmop.DatasetPhysicalProperty),
         (dmop.skipInitialSpace, dmop.DatasetPhysicalProperty),
         (dmop.isTrainDataset, dmop.DatasetInfoProperty),
-        (dmop.isTestDataset, dmop.DatasetInfoProperty)
+        (dmop.isTestDataset, dmop.DatasetInfoProperty),
+        (dmop.isNormallyDistributed, dmop.DatasetInfoProperty),
+        (dmop.containsOutliers, dmop.DatasetInfoProperty),
     ]
 
     for s, o in subproperties:
