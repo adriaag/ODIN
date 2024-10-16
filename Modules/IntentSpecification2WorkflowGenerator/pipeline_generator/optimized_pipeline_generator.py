@@ -45,6 +45,26 @@ def get_intent_dataset_task(intent_graph: Graph, intent_iri: URIRef) -> Tuple[UR
     return result['dataset'], result['task'], result.get('algorithm', None)
 
 
+def get_algorithms_from_task(ontology: Graph, task: URIRef) -> Tuple[URIRef, URIRef]:
+
+    algorithm_task_query = f"""
+    PREFIX tb: <{tb}>
+    SELECT ?algorithm
+    WHERE{{
+        ?algorithm a tb:Algorithm ;
+                   tb:solves {task.n3()} .
+        ?impl tb:implements ?algorithm .
+        FILTER NOT EXISTS{{
+            ?algorithm a tb:Algorithm ;
+                   tb:solves {task.n3()} .
+            ?impl a tb:ApplierImplementation.
+        }}
+    }}
+"""
+    result = ontology.query(algorithm_task_query).bindings
+    algos = [algo['algorithm'] for algo in result]
+    return algos
+
 
 def get_intent_info(intent_graph: Graph, intent_iri: Optional[URIRef] = None) -> \
         Tuple[URIRef, URIRef, List[Dict[str, Any]], URIRef]:
@@ -1016,7 +1036,8 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
                 previous_test_steps = [previous_test_step, train_step] if not same else [previous_test_step]
                 test_parameters = get_component_parameters(ontology, test_component)
                 test_component_implementation = get_component_implementation(ontology, test_component) if test_component else None
-                test_parameters = perform_param_substitution(workflow_graph, test_component_implementation, test_parameters, test_transformation_inputs)
+                test_parameters = perform_param_substitution(graph=workflow_graph, implementation=test_component_implementation,
+                                                             parameters=test_parameters, inputs=test_transformation_inputs)
                 # test_overridden_parameters = get_component_overriden_parameters(ontology, test_component)
                 # test_parameters.update(test_overridden_parameters)
                 # print(f'TEST: {test_component}: {test_parameters}')
@@ -1049,7 +1070,8 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
         saver_step_name = get_step_name(workflow_name, task_order, saver_component)
         saver_parameters = get_component_parameters(ontology, saver_component)
         saver_implementation = get_component_implementation(ontology, saver_component)
-        saver_parameters = perform_param_substitution(workflow_graph, saver_implementation, saver_parameters, [test_dataset_node])
+        saver_parameters = perform_param_substitution(graph=workflow_graph, implementation=saver_implementation,
+                                                      parameters=saver_parameters, inputs=[test_dataset_node])
         # saver_overridden_parameters = get_component_overriden_parameters(ontology, saver_component)
         saver_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, saver_component)
         # saver_parameters.update(saver_overridden_parameters)
@@ -1076,7 +1098,7 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
         tqdm.write(f'Intent: {intent_iri.fragment}')
         tqdm.write(f'Dataset: {dataset.fragment}')
         tqdm.write(f'Task: {task.fragment}')
-        tqdm.write(f'Algorithm: {algorithm.fragment if algorithm is not None else "All Algorithms"}')
+        tqdm.write(f'Algorithm: {algorithm.fragment if algorithm is not None else [algo.fragment for algo in get_algorithms_from_task(ontology, task)]}')
         # tqdm.write(f'Intent params: {intent_params}')
         tqdm.write('-------------------------------------------------')
 

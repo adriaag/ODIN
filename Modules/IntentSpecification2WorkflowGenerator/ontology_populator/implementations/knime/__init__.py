@@ -5,12 +5,12 @@ from .decision_tree import *
 from .svm import *
 from .missing_values import *
 from .csv_io import *
-from .pie_chart import *
-from .bar_chart import *
-from .histogram import *
-from .scatter_plot import *
-from .line_plot import *
-from .heatmap import *
+# from .pie_chart import *
+# from .bar_chart import *
+# from .histogram import *
+# from .scatter_plot import *
+# from .line_plot import *
+# from .heatmap import *
 
 implementations = [
     partitioning_implementation,
@@ -24,12 +24,12 @@ implementations = [
     missing_value_applier_implementation,
     csv_reader_implementation,
     csv_writer_implementation,
-    piechart_visualizer_implementation,
-    barchart_visualizer_implementation,
-    histogram_visualizer_implementation,
-    scatterplot_visualizer_implementation,
-    lineplot_visualizer_implementation,
-    heatmap_visualizer_implementation,
+    # piechart_visualizer_implementation,
+    # barchart_visualizer_implementation,
+    # histogram_visualizer_implementation,
+    # scatterplot_visualizer_implementation,
+    # lineplot_visualizer_implementation,
+    # heatmap_visualizer_implementation,
 ]
 
 components = [
@@ -52,16 +52,16 @@ components = [
     missing_value_applier_component,
     csv_reader_local_component,
     csv_writer_local_component,
-    piechart_sum_visualizer_component,
-    piechart_count_visualizer_component,
-    piechart_avg_visualizer_component,
-    barchart_sum_visualizer_component,
-    barchart_count_visualizer_component,
-    barchart_avg_visualizer_component,
-    histogram_sum_visualizer_component,
-    histogram_count_visualizer_component,
-    histogram_avg_visualizer_component,
-    scatterplot_visualizer_component,
-    lineplot_visualizer_component,
-    heatmap_visualizer_component,
+    # piechart_sum_visualizer_component,
+    # piechart_count_visualizer_component,
+    # piechart_avg_visualizer_component,
+    # barchart_sum_visualizer_component,
+    # barchart_count_visualizer_component,
+    # barchart_avg_visualizer_component,
+    # histogram_sum_visualizer_component,
+    # histogram_count_visualizer_component,
+    # histogram_avg_visualizer_component,
+    # scatterplot_visualizer_component,
+    # lineplot_visualizer_component,
+    # heatmap_visualizer_component,
 ]
