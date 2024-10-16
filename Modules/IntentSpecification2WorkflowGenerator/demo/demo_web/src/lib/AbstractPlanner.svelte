@@ -14,7 +14,7 @@
     let dataset_columns: {[key: string]: string} = {};
     let viz_algorithms: {[key: string]: string} = {};
 
-    let column_choice: string[];
+    let column_choice: string[] = [];
 
     let intent_name = '';
     let dataset = '';
@@ -59,13 +59,13 @@
         creating_plans = false;
     }
 
-    // fetch('http://localhost:5000/visualization_algorithms').then(response => response.json()).then(data => {
-    //     viz_algorithms = data;
-    //     loading_viz_algorithms = false;
-    // })
+    fetch('http://localhost:5000/visualization_algorithms').then(response => response.json()).then(data => {
+        viz_algorithms = data;
+        loading_viz_algorithms = false;
+    })
 
-    fetch('http://localhost:5000/dataset_columns/',
-        {
+
+    fetch('http://localhost:5000/dataset_columns',{
             method: 'POST',
             body: JSON.stringify({
                 'dataset': datasets[dataset]
@@ -99,17 +99,19 @@
                     bind:value={problem}
                     label="Problem"
             />
-            <!-- <Autocomplete
-                    options={Object.keys(viz_algorithms)}
-                    textfield$variant="outlined"
-                    bind:value={viz_algorithm}
-                    label="Viz_algorithm"
-            /> -->
+            {#if problem === "DataVisualization"}
+                <Autocomplete
+                        options={Object.keys(viz_algorithms)}
+                        textfield$variant="outlined"
+                        bind:value={viz_algorithm}
+                        label="Visualization Options"
+                />
+            {/if}
             <Autocomplete
                     options={Object.keys(dataset_columns)}
                     textfield$variant="outlined"
                     bind:value={column_choice}
-                    label="Column_choice"
+                    label="Column Choice"
             />
 
             <Button on:click={run_planner} variant="outlined">

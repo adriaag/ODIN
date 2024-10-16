@@ -1,0 +1,120 @@
+{
+    "visualizations": {
+      "PieChart": {
+        "parameters": {
+          "columns_choice": {
+            "type": "single_select",
+            "source": "cat_cols",
+            "description": "Select a categorical column for pie segments"
+          },
+          "freq_cols": {
+            "type": "single_select",
+            "source": "num_cols",
+            "description": "Select a numerical column for segment sizes"
+          }
+        }
+      },
+      "BarChart": {
+        "parameters": {
+          "columns_choice": {
+            "type": "single_select",
+            "source": "cat_cols",
+            "description": "Select a categorical column for bar categories"
+          },
+          "has_frequency": {
+            "type": "boolean",
+            "description": "Include frequency columns?"
+          },
+          "freq_num": {
+            "type": "number",
+            "description": "Number of frequency columns to include",
+            "condition": "has_frequency",
+            "min": 1
+          },
+          "freq_cols": {
+            "type": "multiple_select",
+            "source": "num_cols",
+            "description": "Select numerical columns for frequencies",
+            "condition": "has_frequency",
+            "count": "freq_num"
+          }
+        }
+      },
+      "Histogram": {
+        "parameters": {
+          "columns_choice": {
+            "type": "single_select",
+            "source": "num_cols",
+            "description": "Select a numerical column for histogram bins"
+          },
+          "has_frequency": {
+            "type": "boolean",
+            "description": "Include frequency columns?"
+          },
+          "freq_num": {
+            "type": "number",
+            "description": "Number of frequency columns to include",
+            "condition": "has_frequency",
+            "min": 1
+          },
+          "freq_cols": {
+            "type": "multiple_select",
+            "source": "num_cols",
+            "description": "Select numerical columns for frequencies",
+            "condition": "has_frequency",
+            "count": "freq_num"
+          }
+        }
+      },
+      "ScatterPlot": {
+        "parameters": {
+          "columns_choice": {
+            "type": "multiple_select",
+            "source": "all_cols",
+            "description": ["Select column for x-axis", "Select column for y-axis"],
+            "count": 2
+          }
+        }
+      },
+      "LinePlot": {
+        "parameters": {
+          "columns_choice": {
+            "type": "single_select",
+            "source": "complete_cols",
+            "description": "Select column for x-axis"
+          },
+          "y_num": {
+            "type": "number",
+            "description": "Number of y-axis columns",
+            "min": 1
+          },
+          "freq_cols": {
+            "type": "multiple_select",
+            "source": "all_cols",
+            "description": "Select columns for y-axis",
+            "count": "y_num"
+          }
+        }
+      },
+      "HeatMap": {
+        "parameters": {
+          "columns_choice": {
+            "type": "single_select",
+            "source": ["cat_cols", "<RowID>"],
+            "description": "Select column for y-axis"
+          },
+          "x_num": {
+            "type": "number",
+            "description": "Number of x-axis columns",
+            "min": 1
+          },
+          "freq_cols": {
+            "type": "multiple_select",
+            "source": "num_cols",
+            "description": "Select columns for x-axis",
+            "count": "x_num"
+          }
+        }
+      }
+    }
+  }

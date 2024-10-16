@@ -2,7 +2,7 @@ import shutil
 import sys
 import os
 
-from flask import Flask, request, send_file, Response
+from flask import Flask, request, send_file, Response, jsonify
 from flask_cors import CORS
 from .functions import *
 
@@ -51,7 +51,7 @@ def run_abstract_planner():
     task = data.get('problem', '')
 
     # print(f'INTENT: {intent_name}')
-    # print(f'DATASET: {dataset}')
+    print(f'DATASET: {dataset}')
     # print(f'TASK: {task}')
 
     intent_graph.add((ab.term(intent_name), RDF.type, tb.Intent))
@@ -77,7 +77,7 @@ def run_abstract_planner():
 
 @app.get('/visualization_algorithms')
 def get_visualization_algorithms():
-    viz_algorithms = {n.fragment: n for n in ontology.subjects(RDF.type, cb.Visualization)}
+    viz_algorithms = {n.fragment: n for n in ontology.subjects(tb.solves, cb.DataVisualization)}
     return viz_algorithms
 
 
@@ -86,10 +86,11 @@ def get_dataset_columns(dataset: URIRef):
     data = request.json
 
     dataset = data.get('dataset', '')
+    dataset_uri = URIRef(dataset)
 
     print(f'DATASET: {dataset}')
 
-    dataset_columns = {n.fragment: n for n in ontology.subjects(RDF.type, dmop.Column) and ontology.objects(dataset, dmop.hasColumn)}
+    dataset_columns = {n.fragment: n for n in ontology.subjects(RDF.type, dmop.Column) if (dataset_uri, dmop.hasColumn, n) in ontology}
     return dataset_columns
 
 
