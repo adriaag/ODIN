@@ -11,6 +11,7 @@
   
     async function loadData(){
         dataset_columns = await fetchColumns(dataset);
+        console.log(`wasaabi, ${dataset_columns}`)
     }
   
     $:{

@@ -829,7 +829,7 @@ def get_best_components(graph: Graph, components: List[URIRef], dataset: URIRef)
         if len(best_scores) > 1: ### checking if all there is at least one superior component
             sorted_preferred = [x for x in sorted_preferred if x[1] >= sorted_preferred[0][1]]
         else:
-            sorted_preferred = random.sample(sorted_preferred, 1)
+            sorted_preferred = random.sample(sorted_preferred, int(math.ceil(len(sorted_preferred)/2)))
 
     for comp, rules_nbr in sorted_preferred:
         sorted_components[comp] = rules_nbr 

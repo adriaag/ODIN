@@ -68,7 +68,7 @@
         intent_name: intent_name,
         dataset: final_dataset,
         problem: final_problem,
-        
+
         visualization_parameters: viz_params
       }),
       headers: {
@@ -165,7 +165,7 @@
             bind:y_axis_column_group
             dataset={datasets[dataset]}
           />
-        {:else if viz_algorithm === "Heatmap"}
+        {:else if viz_algorithm === "HeatMap"}
           <HeatmapVisualizationOptions
             bind:y_axis_column
             bind:x_axis_column_group
