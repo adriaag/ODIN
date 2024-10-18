@@ -8,9 +8,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from pipeline_generator.optimized_pipeline_generator import *
 
 
-def abstract_planner(ontology: Graph, intent: Graph) -> Tuple[
-    Dict[Node, Dict[Node, List[Node]]], Dict[Node, List[Node]]]:
+def abstract_planner(ontology: Graph, intent: Graph, visualization_parameters: Dict[str, List[str]]) -> Tuple[
+    Dict[Node, Dict[Node, List[Node]]], Dict[Node, List[Node]], Dict[str, Union[str, List[str]]]]:
     dataset, task, algorithm, intent_iri = get_intent_info(intent)
+
+    viz_params = visualization_parameters
 
     algs = get_algorithms_from_task(ontology, task)
 
@@ -44,11 +46,37 @@ def abstract_planner(ontology: Graph, intent: Graph) -> Tuple[
                 alg: [],
             }
 
-    return plans, alg_plans
+    return plans, alg_plans, viz_params
 
 
-def workflow_planner(ontology: Graph, implementations: List, intent: Graph):
+def workflow_planner(ontology: Graph, implementations: List, intent: Graph, visualization_parameters: Dict[str, List[str]]):
     dataset, task, algorithm, intent_iri = get_intent_info(intent)
+
+    viz_parameters = {}
+    viz_parameters['columns_choice'] = []
+    if visualization_parameters['categorical_column_choice']!='':
+        viz_parameters['columns_choice'].append(visualization_parameters['categorical_column_choice'])
+    elif visualization_parameters['categorical_column_choice']=='' and visualization_parameters['numerical_column_choice']:
+        viz_parameters['columns_choice'].append(visualization_parameters['numerical_column_choice']) 
+    if visualization_parameters['numerical_column_choice']!='' and len(visualization_parameters['group_numerical_column_choices'])==0:
+        viz_parameters['freq_cols'] = [visualization_parameters['numerical_column_choice']]
+    viz_parameters['freq_num'] = len(visualization_parameters['group_numerical_column_choices'])
+    if viz_parameters['freq_num'] > 0:
+        viz_parameters['freq_cols'] = visualization_parameters['group_numerical_column_choices']
+    if visualization_parameters['x_axis_column'] != '' and visualization_parameters['y_axis_column'] != '':
+        viz_parameters['columns_choice'].append(visualization_parameters['x_axis_column'])
+        viz_parameters['columns_choice'].append(visualization_parameters['y_axis_column'])
+    if len(visualization_parameters['y_axis_column_group'])>0:
+        viz_parameters['columns_choice'].append(visualization_parameters['x_axis_column'])
+        viz_parameters['y_num'] = len(visualization_parameters['y_axis_column_group'])
+        viz_parameters['freq_cols'] = visualization_parameters['y_axis_column_group']
+    if len(visualization_parameters['x_axis_column_group'])>0:
+        viz_parameters['columns_choice'].append(visualization_parameters['y_axis_column'])
+        viz_parameters['x_num'] = len(visualization_parameters['x_axis_column_group'])
+        viz_parameters['freq_cols'] = visualization_parameters['x_axis_column_group']
+    print(f"COLUMN CHOICE: {viz_parameters['columns_choice']}")
+    
+
     components = [
         (c, impl, inputs)
         for impl, inputs in implementations
@@ -84,7 +112,7 @@ def workflow_planner(ontology: Graph, implementations: List, intent: Graph):
                                                   leave=False):
             workflow_name = f'workflow_{workflow_order}_{intent_iri.fragment}_{uuid.uuid4()}'.replace('-', '_')
             wg, w = build_general_workflow(workflow_name, ontology, dataset, component,
-                                              transformation_combination) #need to add visualization details
+                                              transformation_combination, viz_parameters) #need to add visualization details
 
             wg.add((w, tb.generatedFor, intent_iri))
             wg.add((intent_iri, RDF.type, tb.Intent))
@@ -105,8 +133,9 @@ def logical_planner(ontology: Graph, workflow_plans: List[Graph]):
         logical_plan = {
             step_components[step]: [step_components[s] for s in nexts] for step, nexts in step_next.items()
         }
-        main_component = next(
-            comp for comp in logical_plan.keys() if logical_plan[comp] == [cb.term('component-csv_local_writer')])
+        main_component = next((comp for comp in logical_plan.keys() 
+                      if logical_plan[comp] == [cb.term('component-csv_local_writer')] 
+                      or logical_plan[comp] == []), None)
         if (main_component, RDF.type, tb.ApplierImplementation) in ontology:
             options = list(ontology.objects(main_component, tb.hasLearner))
             main_component = next(o for o in options if (None, None, o) in workflow_plan)

@@ -9,6 +9,7 @@ from .functions import *
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common.common import *
 from pipeline_translator.general_pipeline_translator import translate_graph_folder, translate_graph
+from pipeline_generator.optimized_pipeline_generator import get_inputs_numeric_columns, get_inputs_categorical_columns, get_inputs_all_columns
 
 app = Flask(__name__)
 CORS(app)
@@ -49,26 +50,25 @@ def run_abstract_planner():
     intent_name = data.get('intent_name', '')
     dataset = data.get('dataset', '')
     task = data.get('problem', '')
+    visualization_parameters = data.get('visualization_parameters', '')
 
     # print(f'INTENT: {intent_name}')
-    print(f'DATASET: {dataset}')
+    print(f'VIZ PARAMS: {visualization_parameters}')
     # print(f'TASK: {task}')
 
     intent_graph.add((ab.term(intent_name), RDF.type, tb.Intent))
     intent_graph.add((ab.term(intent_name), tb.overData, URIRef(dataset)))
     intent_graph.add((URIRef(task), tb.tackles, ab.term(intent_name)))
 
-    global abstract_plans, algorithm_implementations, intent
+    global abstract_plans, algorithm_implementations, intent, viz_params
     intent = intent_graph
+    viz_params = visualization_parameters
 
     # print(f'INTENT GRAPH: {intent}')
 
     print('ABOUT TO RUN ABSTRACT PLANNING...')
 
-    abstract_plans, algorithm_implementations = abstract_planner(ontology, intent)
-
-    # print(f'ABST PLNS:{abstract_plans}')
-    # print(f'ALGO IMPS:{algorithm_implementations}')
+    abstract_plans, algorithm_implementations, viz_params = abstract_planner(ontology, intent, viz_params)
 
     print('SUCCESSFULLY FINISHED ABSTRACT PLANNING')
     
@@ -81,17 +81,37 @@ def get_visualization_algorithms():
     return viz_algorithms
 
 
-@app.post('/dataset_columns/dataset')
-def get_dataset_columns(dataset: URIRef):
+@app.post('/dataset_columns')
+def get_dataset_columns():
     data = request.json
-
     dataset = data.get('dataset', '')
     dataset_uri = URIRef(dataset)
 
-    print(f'DATASET: {dataset}')
-
-    dataset_columns = {n.fragment: n for n in ontology.subjects(RDF.type, dmop.Column) if (dataset_uri, dmop.hasColumn, n) in ontology}
+    dataset_columns = {n.fragment.split("/")[1]: n for n in ontology.subjects(RDF.type, dmop.Column)
+                       if (dataset_uri, dmop.hasColumn, n) in ontology}
     return dataset_columns
+
+@app.post('/dataset_categorical_columns')
+def get_dataset_categorical_columns():
+    data = request.json
+    dataset = data.get('dataset', '')
+    dataset_uri = URIRef(dataset)
+
+    categorical_columns = {n.fragment.split("/")[1]:
+                   n for n in set(ontology.objects(dataset_uri, dmop.hasColumn)).intersection(set(ontology.subjects(dmop.isCategorical, Literal(True))))
+                   }
+    return categorical_columns
+
+@app.post('/dataset_numerical_columns')
+def get_dataset_numerical_columns():
+    data = request.json
+    dataset = data.get('dataset', '')
+    dataset_uri = URIRef(dataset)
+
+    numerical_columns = {n.fragment.split("/")[1]:
+                         n for n in set(ontology.objects(dataset_uri, dmop.hasColumn)).difference(set(ontology.subjects(dmop.isCategorical, Literal(True))))
+                         } 
+    return numerical_columns
 
 
 @app.get('/abstract_plans')
@@ -106,15 +126,19 @@ def run_logical_planner():
 
     plan_ids = request.json
 
-    print(plan_ids)
+    print(f'PLAN IDS: {plan_ids}')
 
     impls = [impl
              for alg, impls in algorithm_implementations.items() if str(alg) in plan_ids
              for impl in impls]
+    
+    print('RUNNING WORKFLOW PLANNING...')
+    workflow_plans = workflow_planner(ontology, impls, intent, viz_params)
+    print('SUCCESSFULLY FINISHED WORKFLOW PLANNING')
 
-    workflow_plans = workflow_planner(ontology, impls, intent)
-
+    print('RUNNING LOGICAL PLANNING...')
     logical_plans, logical_to_workflows = logical_planner(ontology, workflow_plans)
+    print('SUCCESSFULLY FINISHED LOGICAL PLANNING')
 
     return Response(status=204)
 

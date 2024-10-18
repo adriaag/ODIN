@@ -5,12 +5,15 @@
           "columns_choice": {
             "type": "single_select",
             "source": "cat_cols",
-            "description": "Select a categorical column for pie segments"
+            "description": "Select a categorical column for pie segments",
+            "optional": "False"
           },
           "freq_cols": {
             "type": "single_select",
             "source": "num_cols",
-            "description": "Select a numerical column for segment sizes"
+            "dependent": "columns_choice",
+            "description": "Select a numerical column for segment sizes",
+            "optional": "True"
           }
         }
       },
@@ -19,23 +22,28 @@
           "columns_choice": {
             "type": "single_select",
             "source": "cat_cols",
-            "description": "Select a categorical column for bar categories"
+            "description": "Select a categorical column for bar categories",
+            "optional": "False"
           },
           "has_frequency": {
             "type": "boolean",
-            "description": "Include frequency columns?"
+            "description": "Include frequency columns?",
+            "dependent": "columns_choice",
+            "optional": "False"
           },
           "freq_num": {
             "type": "number",
             "description": "Number of frequency columns to include",
-            "condition": "has_frequency",
+            "dependent":"has_frequency",
+            "optional":"False",
             "min": 1
           },
           "freq_cols": {
             "type": "multiple_select",
             "source": "num_cols",
             "description": "Select numerical columns for frequencies",
-            "condition": "has_frequency",
+            "dependent": "has_frequency",
+            "optional": "False",
             "count": "freq_num"
           }
         }
@@ -45,35 +53,46 @@
           "columns_choice": {
             "type": "single_select",
             "source": "num_cols",
-            "description": "Select a numerical column for histogram bins"
+            "description": "Select a numerical column for histogram bins",
+            "optional": "False"
           },
           "has_frequency": {
             "type": "boolean",
-            "description": "Include frequency columns?"
+            "description": "Include frequency columns?",
+            "dependent":"columns_choice",
+            "optional": "False"
           },
           "freq_num": {
             "type": "number",
             "description": "Number of frequency columns to include",
-            "condition": "has_frequency",
+            "dependent": "has_frequency",
+            "optional": "False",
             "min": 1
           },
           "freq_cols": {
             "type": "multiple_select",
             "source": "num_cols",
             "description": "Select numerical columns for frequencies",
-            "condition": "has_frequency",
+            "dependent": "has_frequency",
+            "optional":"False",
             "count": "freq_num"
           }
         }
       },
       "ScatterPlot": {
         "parameters": {
-          "columns_choice": {
-            "type": "multiple_select",
+          "columns_choice_x_axis": {
+            "type": "single_select",
             "source": "all_cols",
-            "description": ["Select column for x-axis", "Select column for y-axis"],
-            "count": 2
-          }
+            "description": "Select column for x-axis",
+            "optional": "False"
+          },
+          "columns_choice_y_axis": {
+            "type": "single_select",
+            "source": "all_cols",
+            "description": "Select column for y-axis",
+            "optional": "False"
+          }          
         }
       },
       "LinePlot": {
@@ -81,17 +100,20 @@
           "columns_choice": {
             "type": "single_select",
             "source": "complete_cols",
-            "description": "Select column for x-axis"
+            "description": "Select column for x-axis",
+            "optional": "False"
           },
           "y_num": {
             "type": "number",
             "description": "Number of y-axis columns",
+            "optional":"False",
             "min": 1
           },
           "freq_cols": {
             "type": "multiple_select",
             "source": "all_cols",
             "description": "Select columns for y-axis",
+            "optional":"False",
             "count": "y_num"
           }
         }
@@ -101,17 +123,20 @@
           "columns_choice": {
             "type": "single_select",
             "source": ["cat_cols", "<RowID>"],
-            "description": "Select column for y-axis"
+            "description": "Select column for y-axis",
+            "optional":"False"
           },
           "x_num": {
             "type": "number",
             "description": "Number of x-axis columns",
+            "optional":"False",
             "min": 1
           },
           "freq_cols": {
             "type": "multiple_select",
             "source": "num_cols",
             "description": "Select columns for x-axis",
+            "optional":"False",
             "count": "x_num"
           }
         }
