@@ -31,8 +31,6 @@ random_relative_train_test_split_component = Component(
     name='Random Relative Train-Test Split',
     implementation=partitioning_implementation,
     overriden_parameters=[
-        # ("Size of First Partition", "Relative"),
-        # ("Sampling Method", "Random"),
         ParameterSpecification(list(implementation_parameters.keys())[0], "Relative"),
         ParameterSpecification(list(implementation_parameters.keys())[1], "Random")
     ],
@@ -40,6 +38,11 @@ random_relative_train_test_split_component = Component(
         list(implementation_parameters.keys())[2],
         list(implementation_parameters.keys())[4],
     ],
+    rules={
+        (cb.Classification, 1):[
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         CopyTransformation(1, 2),
@@ -76,6 +79,11 @@ random_absolute_train_test_split_component = Component(
         list(implementation_parameters.keys())[3],
         list(implementation_parameters.keys())[4],
     ],
+    rules={
+        (cb.Classification, 1):[
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         CopyTransformation(1, 2),
@@ -111,6 +119,11 @@ top_relative_train_test_split_component = Component(
     exposed_parameters=[
         list(implementation_parameters.keys())[2],
     ],
+    rules={
+        (cb.Classification, 1):[
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         CopyTransformation(1, 2),
@@ -146,6 +159,11 @@ top_absolute_train_test_split_component = Component(
     exposed_parameters=[
         list(implementation_parameters.keys())[3],
     ],
+    rules={
+        (cb.Classification, 1):[
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         CopyTransformation(1, 2),

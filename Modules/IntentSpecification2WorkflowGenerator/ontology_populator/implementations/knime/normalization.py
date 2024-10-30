@@ -30,7 +30,15 @@ min_max_scaling_component = Component(
     overriden_parameters=[
         ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 1),
     ],
-    rules=[cb.NotOutlieredDatasetShape],
+    rules={
+        (cb.Classification, 2):[
+            {'rule': cb.NotOutlieredDatasetShape, 'weight': 2},
+            {'rule': cb.NotNormalDistributionDatasetShape, 'weight': 1}
+        ],
+        (cb.DataVisualization, 1): [
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     exposed_parameters=[
         list(normalizer_implementation.parameters.keys())[1],
         list(normalizer_implementation.parameters.keys())[2],
@@ -81,7 +89,15 @@ z_score_scaling_component = Component(
     overriden_parameters=[
         ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 2),
     ],
-    rules=[cb.NormalDistributionDatasetShape],
+    rules={
+        (cb.Classification, 3):[
+            {'rule': cb.NormalDistributionDatasetShape, 'weight': 2},
+            {'rule': cb.OutlieredDatasetShape, 'weight': 1}
+        ],
+        (cb.DataVisualization, 1): [
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         Transformation(
@@ -126,7 +142,15 @@ decimal_scaling_component = Component(
     overriden_parameters=[
         ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 3),
     ],
-    rules=[cb.IntegerTabularDatasetShape],
+    rules={
+        (cb.Classification, 1):[
+            {'rule': cb.NotNormalDistributionDatasetShape, 'weight': 1},
+            {'rule': cb.OutlieredDatasetShape, 'weight': 1}
+        ],
+        (cb.DataVisualization, 2): [
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         Transformation(

@@ -94,11 +94,9 @@ def add_classes(ontology: Graph):
         tb.Step,
         tb.ModelEvaluation,
         tb.Data,
-        # tb.Dataset,
-        # tb.Model,
-        # tb.Visualization,
         tb.DataCharacteristics,
-        tb.DataSpec
+        tb.DataSpec,
+        tb.Rule
     ]
     add_class(ontology, classes)
 
@@ -183,7 +181,7 @@ def add_properties(ontology: Graph):
         (tb.hasApplier, tb.LearnerComponent, tb.ApplierComponent),
         (tb.hasVisualizer, tb.LearnerComponent, tb.VisualizerComponent),
         (tb.hasLearner, tb.VisualizerComponent, tb.LearnerComponent),
-        (tb.hasRule, tb.Component, tb.DataTag),
+        (tb.hasRule, tb.Component, tb.Rule),
         # Step
         (tb.followedBy, tb.Step, tb.Step),
         (tb.hasInput, tb.Step, tb.Data),
@@ -204,8 +202,9 @@ def add_properties(ontology: Graph):
         (tb.hasValue, tb.DataCharacteristics, XSD.string),
         # DataSpec
         (tb.hasDatatag, tb.DataSpec, tb.DataTag),
-        # IO
-        # (tb.hasData, tb.IOSpec, tb.Data),
+        # Rule
+        (tb.relatedtoTask, tb.Rule, tb.Task),
+        (tb.relatedtoDatatag, tb.Rule, tb.Datatag),
     ]
     for s, p, o in properties:
         add_object_property(ontology, s, p, o)

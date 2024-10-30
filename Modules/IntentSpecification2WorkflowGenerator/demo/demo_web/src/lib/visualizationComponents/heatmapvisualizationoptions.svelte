@@ -28,7 +28,7 @@
       options={Object.keys(dataset_columns)}
       textfield$variant="outlined"
       bind:value={y_axis_column}
-      label="Pick a column on x-axis"
+      label="Pick a column on y-axis"
     />
     <p>Select all columns on the X axis:</p>
     <div>

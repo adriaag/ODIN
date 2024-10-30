@@ -51,6 +51,14 @@ mean_imputation_component = Component(
                                'org.knime.base.node.preproc.pmml.missingval.handlers.MostFrequentValueMissingCellHandlerFactory'),
     ],
     exposed_parameters=[],
+    rules={
+        (cb.Classification, 2):[
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ],
+        (cb.DataVisualization, 2): [
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         Transformation(
@@ -78,6 +86,14 @@ drop_rows_component = Component(
                                'org.knime.base.node.preproc.pmml.missingval.pmml.RemoveRowMissingCellHandlerFactory'),
     ],
     exposed_parameters=[],
+    rules={
+        (cb.Classification, 1):[
+            {'rule': cb.LowMVTabularDatasetShape, 'weight': 2}
+        ],
+        (cb.DataVisualization, 1): [
+            {'rule': cb.TabularDataset, 'weight': 1}
+        ]
+    },
     transformations=[
         CopyTransformation(1, 1),
         Transformation(

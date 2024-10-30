@@ -141,7 +141,6 @@ def add_visualizations(cbox):
         'BarChartVisualization',
         'ScatterPlotVisualization',
         'LinePlotVisualization',
-        # 'DensityPlotVisualization'
         'HistogramVisualization',
         'HeatMapVisualization',
         
@@ -353,6 +352,29 @@ def add_shapes(cbox):
     cbox.add((cb.NormalDistributionDatasetShape, SH.property, cb.isNormalDistributionConstraint))
     cbox.add((cb.NormalDistributionDatasetShape, SH.targetClass, dmop.TabularDataset))
 
+
+    # NotNormalDistributionDatasetShape
+    cbox.add((cb.isNotNormalDistributionConstraint, RDF.type, SH.PropertyConstraintComponent))
+    cbox.add((cb.isNotNormalDistributionConstraint, SH.path, dmop.isNormallyDistributed))
+    cbox.add((cb.isNotNormalDistributionConstraint, SH.maxCount, Literal(0))) 
+
+    cbox.add((cb.NotNormalDistributionDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.NotNormalDistributionDatasetShape, RDF.type, tb.DataTag))
+    cbox.add((cb.NotNormalDistributionDatasetShape, SH.property, cb.isNotNormalDistributionConstraint))
+    cbox.add((cb.NotNormalDistributionDatasetShape, SH.targetClass, dmop.TabularDataset))
+
+
+    # OutlieredDatasetShape
+    cbox.add((cb.hasOutliersConstraint, RDF.type, SH.PropertyConstraintComponent))
+    cbox.add((cb.hasOutliersConstraint, SH.path, dmop.containsOutliers))
+    cbox.add((cb.hasOutliersConstraint, SH.datatype, XSD.boolean))  
+    cbox.add((cb.hasOutliersConstraint, SH.hasValue, Literal(True)))
+
+    cbox.add((cb.OutlieredDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.OutlieredDatasetShape, RDF.type, tb.DataTag))
+    cbox.add((cb.OutlieredDatasetShape, SH.property, cb.hasOutliersConstraint))
+    cbox.add((cb.OutlieredDatasetShape, SH.targetClass, dmop.TabularDataset))
+
     
     # NotOutlieredDatasetShape
     cbox.add((cb.hasNoOutliersConstraint, RDF.type, SH.PropertyConstraintComponent))
@@ -414,18 +436,15 @@ def add_shapes(cbox):
     cbox.add((cb.FloatTabularDatasetShape, SH.property, cb.hasFloatColumn))
     cbox.add((cb.FloatTabularDatasetShape, SH.targetClass, dmop.TabularDataset))
 
-    # ZScoreNormalizedTabularDatasetShape
-    # cbox.add((cb.zscoreNormalizationConstraint, RDF.type, SH.PropertyShape))
-    # cbox.add((cb.zscoreNormalizationConstraint, SH.path, dmop.hasMaxValue)) 
+    # LowPercentageMVDatasetShape
+    cbox.add((cb.missingValueConstraint, RDF.type, SH.PropertyShape))
+    cbox.add((cb.missingValueConstraint, SH.path, dmop.missingvaluesPercentage))
+    cbox.add((cb.missingValueConstraint, SH.maxInclusive, Literal(0.05)))
+    cbox.add((cb.missingValueConstraint, SH.maxCount, Literal(1)))
 
-    # cbox.add((cb.hasNormalizedColumn, RDF.type, SH.PropertyShape))
-    # cbox.add((cb.hasNormalizedColumn, SH.path, dmop.hasColumn))
-    # cbox.add((cb.hasNormalizedColumn, SH.qualifiedValueShape, cb.zscoreNormalizationConstraint))
-    # cbox.add((cb.hasIntegerColumn, SH.qualifiedMinCount, Literal(1)))
-
-    # cbox.add((cb.ZScoreNormalizedTabularDatasetShape, RDF.type, SH.NodeShape))
-    # cbox.add((cb.ZScoreNormalizedTabularDatasetShape, SH.property, cb.hasNormalizedColumn))
-    # cbox.add((cb.ZScoreNormalizedTabularDatasetShape, SH.targetClass, dmop.TabularDataset))    
+    cbox.add((cb.LowMVTabularDatasetShape, RDF.type, SH.NodeShape))
+    cbox.add((cb.LowMVTabularDatasetShape, SH.property, cb.missingValueConstraint))
+    cbox.add((cb.LowMVTabularDatasetShape, SH.targetClass, dmop.TabularDataset))    
 
 
 

@@ -462,6 +462,7 @@ def perform_param_substitution(graph: Graph, parameters: Dict[URIRef, Tuple[Lite
         if isinstance(value.value, str) and value.value in ['$$NUMERIC_COLUMNS$$', '$$ANY_COLUMN$$']:
             possible_cols = get_inputs_all_columns(graph, inputs) if value.value == '$$ANY_COLUMN$$' else get_inputs_numeric_columns(graph, inputs)
             if condition.value == '$$INCLUDED$$':
+                # print(f"THIS: {vis_necessities['freq_cols']}, {possible_cols}")
                 assert set(vis_necessities['freq_cols']).issubset(possible_cols)
                 parameters[param] = (Literal(vis_necessities['freq_cols']), order, condition)
             elif condition.value == '$$EXCLUDED$$':
@@ -788,48 +789,60 @@ PREFIX dmop: <{dmop}>
             workflow_graph.update(query)
 
 
-def retreive_component_rules(graph: Graph, component: URIRef):
+def retreive_component_rules(graph: Graph, task:URIRef, component: URIRef):
     preference_query = f"""
         PREFIX rdfs: <{RDFS}>
 
-        SELECT ?datatag
+        SELECT ?datatag ?weight ?component_rank
         WHERE {{
-            {component.n3()} tb:hasPreference ?datatag .
+            {component.n3()} tb:hasRule ?rule .
+            ?rule tb:relatedtoDatatag ?datatag ;
+                  tb:relatedtoTask {task.n3()} ;
+                  tb:has_rank ?component_rank .
+            ?datatag tb:has_weight ?weight .
         }}
     """
-    preferences = graph.query(preference_query).bindings
+    results = graph.query(preference_query).bindings
 
-    return [pref['datatag'] for pref in preferences]
+    return {result['datatag']: (float(result['weight']), int(result['component_rank'])) for result in results}
 
 
-def get_best_components(graph: Graph, components: List[URIRef], dataset: URIRef):
+def get_best_components(graph: Graph, task: URIRef, components: List[URIRef], dataset: URIRef, percentage: float = None):
 
     preferred_components = {}
     sorted_components = {}
     for component in components:
         
-        component_preferences = retreive_component_rules(graph, component)
-        count = 0
+        component_rules = retreive_component_rules(graph, task, component)
+        # print(f'RULES: {component_rules}')
+        score = 0
 
-        preferred_components[component] = count
+        preferred_components[component] = score
 
-        for pref in component_preferences:
-            if satisfies_shape(graph, graph, pref, dataset):
-                count+=1
+        for datatag, weight_rank in component_rules.items():
+            rule_weight = weight_rank[0]
+            component_rank = weight_rank[1]
+            if satisfies_shape(graph, graph, datatag, dataset):
+                score+=rule_weight
             else:
-                count+=-1
+                score-=rule_weight
                 
-            preferred_components[component] = count
+            preferred_components[component] = (score, component_rank)
         
     # print(f'BEFORE SORTING: {preferred_components}')
-    sorted_preferred = sorted(preferred_components.items(), key=lambda x: x[1], reverse=True)
+    sorted_preferred = sorted(preferred_components.items(), key=lambda x: x[1][0], reverse=True)
+    # print(f'AFTERI SORTING: {sorted_preferred}')
 
     if len(sorted_preferred) > 0: ### there are multiple components to choose from
         best_scores = set([comp[1] for comp in sorted_preferred])
-        if len(best_scores) > 1: ### checking if all there is at least one superior component
+        print(f'SCORES: {best_scores}')
+        if len(best_scores) == 1:
+            sorted_preferred = random.sample(sorted_preferred, int(math.ceil(len(sorted_preferred)*percentage))) if percentage else sorted_preferred
+        elif len(best_scores) > 1: ### checking if there is at least one superior component
             sorted_preferred = [x for x in sorted_preferred if x[1] >= sorted_preferred[0][1]]
-        else:
-            sorted_preferred = random.sample(sorted_preferred, int(math.ceil(len(sorted_preferred)/2)))
+        # else:
+        #     sorted_preferred = random.sample(sorted_preferred, int(math.ceil(len(sorted_preferred)*percentage)))
+    # print(f'AFTERI SORTING: {sorted_preferred}')
 
     for comp, rules_nbr in sorted_preferred:
         sorted_components[comp] = rules_nbr 
@@ -1209,7 +1222,7 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
 
         for tr, methods in available_transformations.items():
             # print(f'Possible Components for {tr} --> {methods}')
-            best_components = get_best_components(ontology, methods, dataset)
+            best_components = get_best_components(ontology, task, methods, dataset)
 
             # print(f'PREFERRED COMPONENTS: {best_components}')
 
@@ -1253,9 +1266,9 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
 
 def interactive():
     intent_graph = get_graph_xp()
-    intent = input('Introduce the intent name [ClassificationIntent]: ') or 'ClassificationIntent'#or'VisualizationIntent'
-    data = input('Introduce the data name [titanic.csv]: ') or 'titanic.csv'
-    task = input('Introduce the problem name [Classification]: ') or'Classification'#or 'DataVisualization'
+    intent = 'ClassificationIntent'#input('Introduce the intent name [ClassificationIntent]: ') or 'ClassificationIntent'#or'VisualizationIntent'
+    data = 'titanic.csv'#input('Introduce the data name [titanic.csv]: ') or 'titanic.csv'
+    task = 'Classification'#input('Introduce the problem name [Classification]: ') or'Classification'#or 'DataVisualization'
 
     vis_algorithms = {"piechart": cb.PieChart,
                       "barchart": cb.BarChart,
@@ -1276,7 +1289,7 @@ def interactive():
 
     ontology = get_ontology_graph()
 
-    folder = input('Introduce the folder to save the workflows: ')
+    folder = ''#input('Introduce the folder to save the workflows: ')
     if folder == '':
         folder = f'./workflows/{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}/'
         tqdm.write(f'No folder introduced, using default ({folder})')
@@ -1292,4 +1305,4 @@ def interactive():
     print(f'Workflows saved in {folder}')
 
 
-# interactive()
+interactive()

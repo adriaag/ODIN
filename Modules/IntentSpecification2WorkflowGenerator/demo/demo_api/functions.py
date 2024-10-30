@@ -99,7 +99,7 @@ def workflow_planner(ontology: Graph, implementations: List, intent: Graph, visu
         }
 
         for transformation, methods in available_transformations.items():
-            best_components = get_best_components(ontology, methods, dataset)
+            best_components = get_best_components(ontology, task, methods, dataset, 1.0)
 
             available_transformations[transformation] = list(best_components.keys())
 

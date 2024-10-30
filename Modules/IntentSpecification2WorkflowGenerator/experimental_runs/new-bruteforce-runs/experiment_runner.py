@@ -95,10 +95,10 @@ def build_experimental_workflows(ontology: Graph, intent_graph: Graph, destinati
             for shape in unsatisfied_shapes
         }
 
-        for tr, methods in available_transformations.items():
+        # for tr, methods in available_transformations.items():
 
-            best_components = get_best_components(ontology, methods, dataset)
-            available_transformations[tr] = list(best_components.keys())
+        #     best_components = get_best_components(ontology, methods, dataset)
+        #     available_transformations[tr] = list(best_components.keys())
             
 
         transformation_combinations = list(

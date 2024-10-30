@@ -1,4 +1,4 @@
-from typing import List, Union, Tuple, Any
+from typing import List, Union, Tuple, Dict, Any
 
 from rdflib.collection import Collection
 
@@ -18,7 +18,7 @@ class Component:
     def __init__(self, name: str, implementation: Implementation, transformations: List[Transformation],
                  exposed_parameters: List[Parameter] = None,
                  overriden_parameters: List[ParameterSpecification] = None,
-                 rules: List[Union[URIRef, List[URIRef]]] = None,
+                 rules: Dict[tuple[URIRef, float], List[Dict[str, Union[URIRef, int]]]] = None,
                  counterpart: Union['Component', List['Component']] = None,
                  namespace: Namespace = cb) -> None:
         super().__init__()
@@ -89,19 +89,31 @@ class Component:
             g.add((self.uri_ref, tb.exposesParameter, parameter.uri_ref))
 
 
-        if isinstance(self.rules, list):
-            if len(self.rules) > 1:
-                preference_collection = BNode()
-                preference_shape = self.namespace.term(f'Shape_{uuid.uuid4()}')
-                Collection(g, preference_collection, self.rules)
-                g.add((preference_shape, RDF.type, tb.DataTag))
-                g.add((preference_shape, RDF.type, SH.NodeShape))
-                g.add((preference_shape, SH['and'], preference_collection))
-                g.add((self.uri_ref, tb.hasPreference, preference_shape))
-            elif len(self.rules) == 1:
-                g.add((self.uri_ref, tb.hasPreference, self.rules[0]))
-        else:
-            g.add((self.uri_ref, tb.hasPreference, self.rules))
+        # if isinstance(self.rules, list):
+        #     if len(self.rules) > 1:
+        #         preference_collection = BNode()
+        #         preference_shape = self.namespace.term(f'Shape_{uuid.uuid4()}')
+        #         Collection(g, preference_collection, self.rules)
+        #         g.add((preference_shape, RDF.type, tb.DataTag))
+        #         g.add((preference_shape, RDF.type, SH.NodeShape))
+        #         g.add((preference_shape, SH['and'], preference_collection))
+        #         g.add((self.uri_ref, tb.hasPreference, preference_shape))
+        #     elif len(self.rules) == 1:
+        #         g.add((self.uri_ref, tb.hasPreference, self.rules[0]))
+        # else:
+        #     g.add((self.uri_ref, tb.hasPreference, self.rules))
+
+        if isinstance(self.rules, dict):
+            for task, rules in self.rules.items():
+                if len(rules) > 0:
+                    for rule in rules:
+                        rule_node = BNode()
+                        g.add((rule_node, RDF.type, tb.Rule))
+                        g.add((self.uri_ref, tb.hasRule, rule_node))
+                        g.add((rule_node, tb.relatedtoDatatag, rule['rule']))
+                        g.add((rule_node, tb.relatedtoTask, task[0]))
+                        g.add((rule['rule'], tb.has_weight, Literal(rule['weight'])))
+                        g.add((rule_node, tb.has_rank, Literal(task[1])))
 
         return self.uri_ref
 

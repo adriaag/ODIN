@@ -80,15 +80,22 @@ def is_unique(column_type, column):
     
 
 def is_normal(column_type, column):
-    if column_type in [dmop.Integer, dmop.Float]:
+    if column_type in [dmop.Float]:
         clean_col = column.dropna()
         _, p_value = stats.shapiro(x=clean_col)
-        if p_value >= 0.05:
+        if p_value < 0.05:
+            sk = stats.skew(clean_col)
+            ku = stats.kurtosis(clean_col)
+            if abs(sk)<1 and abs(ku)<2:
+                return True
+            else:
+                return False
+        else:
             return True
         
 
 def check_outliers(column_type, column):
-    if column_type in [dmop.Integer, dmop.Float]:
+    if column_type in [dmop.Float]:
         clean_col = column.dropna()
 
         median = np.median(clean_col)
@@ -103,10 +110,17 @@ def check_outliers(column_type, column):
             return False
         else:
             return True
+        
+
+def get_percentage_of_missing_rows(dataset):
+    return round(dataset.isna().any(axis=1).sum()/dataset.shape[0], 3)
 
 
 def add_column_info(dataset_path, dataset, dataset_node, graph, label):
     print('\tAdding column info:')
+    missing_percentage = get_percentage_of_missing_rows(dataset)
+    if missing_percentage != 0.0:
+        graph.add((dataset_node, dmop.missingvaluesPercentage, Literal(missing_percentage)))
     graph.add((dataset_node, dmop.containsOutliers, Literal(False)))
     for col in dataset.columns:
         col_type = dataset[col].dtype.name
