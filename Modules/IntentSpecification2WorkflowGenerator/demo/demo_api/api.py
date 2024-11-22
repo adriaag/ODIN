@@ -96,30 +96,32 @@ def get_dataset_columns():
 #     task = data.get('problem', '')
 #     algorithm = data.get('algorithm', '')
 
-#     exposed_parameters = {
-#         exp_param: {
-#             "label": label,
-#             "value": value,
-#             "condition": condition
-#         }
-#         for exp_param, label, value, condition in ontology.query(
-#             f"""
-#             PREFIX tb: <http://example.org/ontology#>
-#             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-#             SELECT DISTINCT ?exp_param ?label ?value ?condition
-#             WHERE {{
-#                 <{task}> a tb:Task .
-#                 {('?algorithm' if algorithm is None else f'<{algorithm}>')} tb:solves <{task}> .
-#                 ?imp tb:implements ?algorithm .
-#                 ?com tb:hasImplementation ?imp ;
-#                     tb:exposesParameter ?exp_param .
-#                 ?exp_param tb:has_defaultvalue ?value ;
-#                         tb:has_condition ?condition ;
-#                         rdfs:label ?label .
-#             }}
-#             """
-#         )
-#     }
+    # exposed_parameters = {
+    #     exp_param: {
+    #         "label": label,
+    #         "value": value,
+    #         "condition": condition
+    #     }
+    #     for exp_param, label, value, condition in ontology.query(
+    #         f"""
+    #         PREFIX tb: <{tb}>
+    #         SELECT DISTINCT ?exp_param ?label ?value ?condition
+    #         WHERE {{
+    #     {task.n3()} a tb:Task .
+    #     {{
+    #         {"BIND(" + algorithm.n3() + " AS ?algorithm) ." if algorithm else f"?algorithm tb:solves {task.n3()} ."}
+    #     }}
+    #     # {'?algorithm' if algorithm is None else algorithm.n3()} tb:solves {task.n3()} .
+    #     ?imp tb:implements ?algorithm .
+    #     ?com tb:hasImplementation ?imp ;
+    #         tb:exposesParameter ?exp_param .
+    #     ?exp_param tb:has_defaultvalue ?value;
+    #             tb:has_condition ?condition ;
+    #             rdfs:label ?label .
+    # }}
+    # """
+    #     )
+    # }
 
 #     return exposed_parameters
 
