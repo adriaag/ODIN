@@ -28,7 +28,7 @@ min_max_scaling_component = Component(
     name='Min-Max Scaling',
     implementation=normalizer_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 1),
+        ParameterSpecification(next((param for param in normalizer_implementation.parameters.keys() if param.knime_key == 'mode'), None), 1),
     ],
     rules={
         (cb.Classification, 2):[
@@ -40,8 +40,8 @@ min_max_scaling_component = Component(
         ]
     },
     exposed_parameters=[
-        list(normalizer_implementation.parameters.keys())[1],
-        list(normalizer_implementation.parameters.keys())[2],
+        next((param for param in normalizer_implementation.parameters.keys() if param.knime_key == 'newmin'), None),
+        next((param for param in normalizer_implementation.parameters.keys() if param.knime_key == 'newmax'), None),
     ],
     transformations=[
         CopyTransformation(1, 1),
@@ -87,7 +87,7 @@ z_score_scaling_component = Component(
     name='Z-Score Scaling',
     implementation=normalizer_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 2),
+        ParameterSpecification(next((param for param in normalizer_implementation.parameters.keys() if param.knime_key == 'mode'), None), 2),
     ],
     rules={
         (cb.Classification, 3):[
@@ -140,7 +140,7 @@ decimal_scaling_component = Component(
     name='Decimal Scaling',
     implementation=normalizer_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(normalizer_implementation.parameters.keys())[0], 3),
+        ParameterSpecification(next((param for param in normalizer_implementation.parameters.keys() if param.knime_key == 'mode'), None), 3),
     ],
     rules={
         (cb.Classification, 1):[

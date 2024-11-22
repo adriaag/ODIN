@@ -30,7 +30,7 @@ def get_ontology_graph():
         r'../dataset_annotator/annotated_datasets/penguins_annotated.ttl',
         r'../dataset_annotator/annotated_datasets/titanic_annotated.ttl',
         r'../dataset_annotator/annotated_datasets/diabetes_annotated.ttl',
-        # r'dataset_annotator/annotated_datasets/countries_annotated.ttl',
+        r'../dataset_annotator/annotated_datasets/horses_annotated.ttl',
     ]
     for o in ontologies:
         graph.parse(o, format="turtle")

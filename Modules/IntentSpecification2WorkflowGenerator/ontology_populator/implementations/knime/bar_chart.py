@@ -12,29 +12,28 @@ barchart_visualizer_implementation = KnimeImplementation(
                        path="model/generateImagemodel_Internals"),
         KnimeParameter("GIMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/generateImagemodel_Internals"),
-        KnimeParameter("category", XSD.string, "$$CATEGORICAL$$", 'cat', path="model"), ### Very Important
+        KnimeParameter("Bar Chart category", XSD.string, "$$BAR_CATEGORICAL$$", 'cat', path="model"), 
         KnimeParameter("CI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/cat_Internals"),
         KnimeParameter("CI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/cat_Internals"),
-        KnimeParameter("Sort Bars Alphabetically", XSD.boolean, False, 'sort', path="model"), ### Very Important
+        KnimeParameter("Sort Bars Alphabetically", XSD.boolean, False, 'sort', path="model"), 
         KnimeParameter("SI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/sort_Internals"),
         KnimeParameter("SI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/sort_Internals"),
-        KnimeParameter("Bar Aggregation", XSD.string, "Occurrence Count", 'aggr', path="model"), ### Very Important [Occurrence Count, Sum, Average]
+        KnimeParameter("Bar Aggregation", XSD.string, "Occurrence Count", 'aggr', path="model"), ### [Occurrence Count, Sum, Average]
         KnimeParameter("AGGI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/aggr_Internals"),
         KnimeParameter("AGGI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/aggr_Internals"),
-        KnimeParameter("Filter Type", XSD.string, "STANDARD", 'filter-type', path="model/freq"), ### Optional Very Important
-        KnimeParameter("Included Names Columns", RDF.List, "$$NUMERIC_COLUMNS$$", 'included_names',
-                       condition = "$$INCLUDED$$", path="model/freq"), ### Very Important
-        # KnimeParameter("Included Names 0", XSD.string, "$$NUMERICAL$$", '0', path="model/freq/included_names"), ### Very Important
-        KnimeParameter("Excluded Names Columns", RDF.List, "$$NUMERIC_COLUMNS$$", 'excluded_names',
-                       condition = "$$EXCLUDED$$", path="model/freq"), ### Very Important
+        KnimeParameter("Filter Type", XSD.string, "STANDARD", 'filter-type', path="model/freq"), 
+        KnimeParameter("Included Frequency Columns", RDF.List, "$$BAR_NUMERICAL$$", 'included_names',
+                       condition = "$$BAR_INCLUDED$$", path="model/freq"), 
+        KnimeParameter("Excluded Frequency Columns", RDF.List, "$$BAR_NUMERICAL$$", 'excluded_names',
+                       condition = "$$BAR_EXCLUDED$$", path="model/freq"), 
         KnimeParameter("Enforce Option", XSD.string, "EnforceExclusion", 'enforce_option', path="model/freq"),
-        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', path="model/freq/name_pattern"), ### Need to Be Checked
+        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', path="model/freq/name_pattern"),
         KnimeParameter("NP Type", XSD.string, "Wildcard", 'type', path="model/freq/name_pattern"),
         KnimeParameter("Np Case Sensitive", XSD.boolean, True, 'caseSensitive', path="model/freq/name_pattern"),
         KnimeParameter("NP Exclude Matching", XSD.boolean, False, 'excludeMatching', path="model/freq/name_pattern"),
@@ -47,37 +46,37 @@ barchart_visualizer_implementation = KnimeImplementation(
                        path="model/processInMemory_Internals"),
         KnimeParameter("PIMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/processInMemory_Internals"),
-        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), ### Very Important
+        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), 
         KnimeParameter("ROMVI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/reportOnMissingValues_Internals"),
         KnimeParameter("ROMVI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/reportOnMissingValues_Internals"), 
-        KnimeParameter("Include Missing Values Category", XSD.boolean, True, 'includeMissValCat', path="model"), ### Very Important
+        KnimeParameter("Include Missing Values Category", XSD.boolean, True, 'includeMissValCat', path="model"), 
         KnimeParameter("IMVCI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/includeMissValCat_Internals"),
         KnimeParameter("IMVCI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/includeMissValCat_Internals"),
-        KnimeParameter("title", XSD.string, "Bar Chart", 'title', path="model"), ### Very Important
+        KnimeParameter("title", XSD.string, "Bar Chart", 'title', path="model"), 
         KnimeParameter("TI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/title_Internals"),
         KnimeParameter("TI EnabledStatus", XSD.boolean, True, "EnabledStatus",
                       path="model/title_Internals"),
-        KnimeParameter("subtitle", XSD.string, "", 'subtitle', path="model"), ### Very Important
+        KnimeParameter("subtitle", XSD.string, "", 'subtitle', path="model"), 
         KnimeParameter("SUBI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/subtitle_Internals"),
         KnimeParameter("SUBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/subtitle_Internals"),
-        KnimeParameter("Category-axis Label", XSD.string, "", 'catLabel', path="model"), ### Very Important
+        KnimeParameter("Category-axis Label", XSD.string, "", 'catLabel', path="model"), 
         KnimeParameter("CALI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/catLabel_Internals"),
         KnimeParameter("CALI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/catLabel_Internals"),
-        KnimeParameter("Frequency-axis Label", XSD.string, "", 'freqLabel', path="model"), ### Very Important
+        KnimeParameter("Frequency-axis Label", XSD.string, "", 'freqLabel', path="model"), 
         KnimeParameter("FALI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/freqLabel_Internals"),
         KnimeParameter("FALI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/freqLabel_Internals"),
-        KnimeParameter("Chart Type", XSD.string, "Grouped", 'chartType', path="model"), ### Very Important [Grouped, Stacked]
+        KnimeParameter("Chart Type", XSD.string, "Grouped", 'chartType', path="model"), 
         KnimeParameter("CTI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/chartType_Internals"),
         KnimeParameter("CTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -87,7 +86,7 @@ barchart_visualizer_implementation = KnimeImplementation(
                        path="model/staggerLabels_Internals"),
         KnimeParameter("SLI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/staggerLabels_Internals"),
-        KnimeParameter("Legend", XSD.boolean, True, 'legend', path="model"), ### Very Important 
+        KnimeParameter("Legend", XSD.boolean, True, 'legend', path="model"), 
         KnimeParameter("LEI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/legend_Internals"),
         KnimeParameter("LEI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -97,7 +96,7 @@ barchart_visualizer_implementation = KnimeImplementation(
                        path="model/tooltip_Internals"),
         KnimeParameter("TTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/tooltip_Internals"),
-        KnimeParameter("Bar Chart Orientation", XSD.boolean, False, 'orientation', path="model"), ### Very Important
+        KnimeParameter("Bar Chart Orientation", XSD.boolean, False, 'orientation', path="model"), 
         KnimeParameter("OI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/orientation_Internals"),
         KnimeParameter("OI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -107,7 +106,7 @@ barchart_visualizer_implementation = KnimeImplementation(
                        path="model/displayFullscreenButton_Internals"),
         KnimeParameter("DFBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/displayFullscreenButton_Internals"),
-        KnimeParameter("Show Maximum Value", XSD.boolean, True, 'showMaximum', path="model"), ### Very Important
+        KnimeParameter("Show Maximum Value", XSD.boolean, True, 'showMaximum', path="model"), 
         KnimeParameter("SMI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/showMaximum_Internals"),
         KnimeParameter("SMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -117,10 +116,10 @@ barchart_visualizer_implementation = KnimeImplementation(
                        path="model/showStaticBarValues_Internals"),
         KnimeParameter("SSBVI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/showStaticBarValues_Internals"),
-        KnimeParameter("svg_width", XSD.integer, 600, 'width', path="model/svg"), ### Very Important
-        KnimeParameter("svg_height", XSD.integer, 400, 'height', path="model/svg"), ### Very Important
-        KnimeParameter("svg_fullscreen", XSD.boolean, True, 'fullscreen', path="model/svg"), ### Very Important
-        KnimeParameter("svg_showFullscreen", XSD.boolean, True, 'showFullscreen', path="model/svg"), ### Very Important
+        KnimeParameter("svg_width", XSD.integer, 600, 'width', path="model/svg"), 
+        KnimeParameter("svg_height", XSD.integer, 400, 'height', path="model/svg"), 
+        KnimeParameter("svg_fullscreen", XSD.boolean, True, 'fullscreen', path="model/svg"), 
+        KnimeParameter("svg_showFullscreen", XSD.boolean, True, 'showFullscreen', path="model/svg"),
         KnimeParameter("SVGI SettingsModelID", XSD.string, "SMID_svg", 'SettingsModelID',
                        path="model/svg_Internals"),
         KnimeParameter("SVGI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -220,25 +219,20 @@ barchart_visualizer_implementation = KnimeImplementation(
     knime_feature = KnimeJSViewsFeature,
 )
 
-# barchart_params = list(barchart_visualizer_implementation.parameters.keys())
-
 exposed_params = [
     'cat', ### category column
-    'sort', ### sort bars alphabetically
-    'includeMissValCat', ### include missing value category: [True, False]
-    'title', ### bar chart visualization title
-    'chartType', ### chart type ['Grouped', 'Stacked']
-    'orientation', ### bar chart orientaion
+    'included_names' ### frequency columns
 ]
 
 barchart_sum_visualizer_component = Component(
     name = "Bar Chart Sum Component",
     implementation = barchart_visualizer_implementation,
     exposed_parameters = [
-        param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None), ### category column
+        next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None) ### frequency columns
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Sum")
+        ParameterSpecification(next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Sum")
     ],
     transformations = []
 )
@@ -247,10 +241,11 @@ barchart_count_visualizer_component = Component(
     name = "Bar Chart Count Component",
     implementation = barchart_visualizer_implementation,
     exposed_parameters = [
-        param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None), 
+        next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None) 
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Occurence Count")
+        ParameterSpecification(next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Occurence Count")
     ],
     transformations = []
 )
@@ -259,10 +254,11 @@ barchart_avg_visualizer_component = Component(
     name = "Bar Chart Average Component",
     implementation = barchart_visualizer_implementation,
     exposed_parameters = [
-        param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None), 
+        next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None) 
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Average")
+        ParameterSpecification(next((param for param in barchart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Average")
     ],
     transformations = []
 )

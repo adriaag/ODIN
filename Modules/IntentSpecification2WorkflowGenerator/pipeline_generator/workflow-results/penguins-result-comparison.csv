@@ -1,0 +1,77 @@
+workflow-number,classification-algorithm,algorithm-component,partition-component,Imputation-component,scaling-component,accuracy-score,balanced-accuracy-score,f1-score,optimized,reason
+0,DT,,random-absolute,,,93.03,93.03,normal,TRUE,
+1,DT,,random-relative,,,94.2,93.6,normal,TRUE,
+2,DT,,first-absolute,,,21.31,0.5,abnormal,TRUE,
+3,DT,,first-relative,,,97.1,0,abnormal,TRUE,
+4,SVM,hypertangent,random-absolute,drop,decimal,40.8,0.5,abnormal,FALSE,
+5,SVM,hypertangent,random-absolute,drop,min-max,0.8,77.3,abnormal,FALSE,
+6,SVM,hypertangent,random-absolute,drop,z-score,94.94,94.4,normal,TRUE,
+7,SVM,hypertangent,random-absolute,mean,decimal,74.59,75.2,normal,FALSE,
+8,SVM,hypertangent,random-absolute,mean,min-max,78.69,76.9,abnormal,FALSE,
+9,SVM,hypertangent,random-absolute,mean,z-score,93.03,92.5,normal,FALSE,
+10,SVM,hypertangent,random-relative,drop,decimal,76.81,75.2,abnormal,FALSE,
+11,SVM,hypertangent,random-relative,drop,min-max,82.8,77.9,abnormal,FALSE,
+12,SVM,hypertangent,random-relative,drop,z-score,97.1,97.7,normal,TRUE,
+13,SVM,hypertangent,random-relative,mean,decimal,81.16,76.1,abnormal,FALSE,
+14,SVM,hypertangent,random-relative,mean,min-max,78.26,76.9,abnormal,FALSE,
+15,SVM,hypertangent,random-relative,mean,z-score,88.4,89.2,normal,FALSE,
+16,SVM,hypertangent,first-absolute,drop,decimal,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+17,SVM,hypertangent,first-absolute,drop,min-max,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+18,SVM,hypertangent,first-absolute,drop,z-score,N/A,N/A,N/A,TRUE,Invalid partitioning resulting in a training dataset that contains one class.
+19,SVM,hypertangent,first-absolute,mean,decimal,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+20,SVM,hypertangent,first-absolute,mean,min-max,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+21,SVM,hypertangent,first-absolute,mean,z-score,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+22,SVM,hypertangent,first-relative,drop,decimal,0,0,abnormal,FALSE,
+23,SVM,hypertangent,first-relative,drop,min-max,100,0,abnormal,FALSE,
+24,SVM,hypertangent,first-relative,drop,z-score,63.64,0,abnormal,TRUE,
+25,SVM,hypertangent,first-relative,mean,decimal,0,0,abnormal,FALSE,
+26,SVM,hypertangent,first-relative,mean,min-max,98.55,0,abnormal,FALSE,
+27,SVM,hypertangent,first-relative,mean,z-score,63.77,0,abnormal,FALSE,
+28,SVM,polynomial,random-absolute,drop,decimal,68.49,70.7,abnormal,FALSE,
+29,SVM,polynomial,random-absolute,drop,min-max,96.64,96.2,normal,FALSE,
+30,SVM,polynomial,random-absolute,drop,z-score,97.91,97.6,normal,TRUE,
+31,SVM,polynomial,random-absolute,mean,decimal,78.69,77.2,normal,FALSE,
+32,SVM,polynomial,random-absolute,mean,min-max,97.95,97.9,normal,FALSE,
+33,SVM,polynomial,random-absolute,mean,z-score,96.72,97.2,normal,FALSE,
+34,SVM,polynomial,random-relative,drop,decimal,81.82,78,normal,FALSE,
+35,SVM,polynomial,random-relative,drop,min-max,98.51,98,normal,FALSE,
+36,SVM,polynomial,random-relative,drop,z-score,98.53,99.2,normal,TRUE,
+37,SVM,polynomial,random-relative,mean,decimal,76.81,76.3,normal,FALSE,
+38,SVM,polynomial,random-relative,mean,min-max,97.1,97,normal,FALSE,
+39,SVM,polynomial,random-relative,mean,z-score,100,100,normal,FALSE,
+40,SVM,polynomial,first-absolute,drop,decimal,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+41,SVM,polynomial,first-absolute,drop,min-max,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+42,SVM,polynomial,first-absolute,drop,z-score,N/A,N/A,N/A,TRUE,Invalid partitioning resulting in a training dataset that contains one class.
+43,SVM,polynomial,first-absolute,mean,decimal,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+44,SVM,polynomial,first-absolute,mean,min-max,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+45,SVM,polynomial,first-absolute,mean,z-score,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+46,SVM,polynomial,first-relative,drop,decimal,66.67,0,abnormal,FALSE,
+47,SVM,polynomial,first-relative,drop,min-max,100,0,abnormal,FALSE,
+48,SVM,polynomial,first-relative,drop,z-score,100,0,abnormal,TRUE,
+49,SVM,polynomial,first-relative,mean,decimal,62.32,0,abnormal,FALSE,
+50,SVM,polynomial,first-relative,mean,min-max,98.55,0,abnormal,FALSE,
+51,SVM,polynomial,first-relative,mean,z-score,98.55,0,abnormal,FALSE,
+52,SVM,rbf,random-absolute,drop,decimal,98.31,98.1,normal,FALSE,
+53,SVM,rbf,random-absolute,drop,min-max,91.21,91,normal,FALSE,
+54,SVM,rbf,random-absolute,drop,z-score,42.13,50.6,abnormal,TRUE,
+55,SVM,rbf,random-absolute,mean,decimal,98.36,98.1,normal,FALSE,
+56,SVM,rbf,random-absolute,mean,min-max,94.26,94,normal,FALSE,
+57,SVM,rbf,random-absolute,mean,z-score,42.21,50.6,abnormal,FALSE,
+58,SVM,rbf,random-relative,drop,decimal,100,100,normal,FALSE,
+59,SVM,rbf,random-relative,drop,min-max,95.38,95.1,normal,FALSE,
+60,SVM,rbf,random-relative,drop,z-score,46.38,55,abnormal,TRUE,
+61,SVM,rbf,random-relative,mean,decimal,97.1,96.6,normal,FALSE,
+62,SVM,rbf,random-relative,mean,min-max,98.55,98.9,normal,FALSE,
+63,SVM,rbf,random-relative,mean,z-score,39.13,49.1,abnormal,FALSE,
+64,SVM,rbf,first-absolute,drop,decimal,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+65,SVM,rbf,first-absolute,drop,min-max,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+66,SVM,rbf,first-absolute,drop,z-score,N/A,N/A,N/A,TRUE,Invalid partitioning resulting in a training dataset that contains one class.
+67,SVM,rbf,first-absolute,mean,decimal,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+68,SVM,rbf,first-absolute,mean,min-max,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+69,SVM,rbf,first-absolute,mean,z-score,N/A,N/A,N/A,FALSE,Invalid partitioning resulting in a training dataset that contains one class.
+70,SVM,rbf,first-relative,drop,decimal,100,0,abnormal,FALSE,
+71,SVM,rbf,first-relative,drop,min-max,100,0,abnormal,FALSE,
+72,SVM,rbf,first-relative,drop,z-score,3.03,0,abnormal,TRUE,
+73,SVM,rbf,first-relative,mean,decimal,98.55,0,abnormal,FALSE,
+74,SVM,rbf,first-relative,mean,min-max,98.55,0,abnormal,FALSE,
+75,SVM,rbf,first-relative,mean,z-score,2.9,0,abnormal,FALSE,

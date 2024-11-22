@@ -3,8 +3,8 @@ from .knime_implementation import KnimeBaseBundle, KnimeParameter, KnimeImplemen
 from ..core import *
 
 partitioning_implementation = KnimeImplementation(
-    name='Train Test Split',
-    algorithm=cb.TrainTestSplit,
+    name='Data Partitioning',
+    algorithm=cb.Partitioning,
     parameters=[
         KnimeParameter("Size of First Partition", XSD.string, None, "method"),
         KnimeParameter("Sampling Method", XSD.string, None, "samplingMethod"),

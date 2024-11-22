@@ -12,27 +12,27 @@ piechart_visualizer_implementation = KnimeImplementation(
                        path="model/generateImagemodel_Internals"),
         KnimeParameter("GIMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/generateImagemodel_Internals"),
-        KnimeParameter("category", XSD.string, "$$CATEGORICAL$$", 'cat', path="model"), ### Very Important
+        KnimeParameter("Pie Chart Category", XSD.string, "$$PIE_CATEGORICAL$$", 'cat', path="model"),
         KnimeParameter("CI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/cat_Internals"),
         KnimeParameter("CI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/cat_Internals"),
-        KnimeParameter("Pie Aggregation", XSD.string, "Sum", 'aggr', path="model"), ### Very Important [Occurrence Count, Sum, Average]
+        KnimeParameter("Pie Aggregation", XSD.string, "Sum", 'aggr', path="model"), 
         KnimeParameter("AGGI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/aggr_Internals"),
         KnimeParameter("AGGI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/aggr_Internals"),
-        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), ### Very Important
+        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"),
         KnimeParameter("ROMVI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/reportOnMissingValues_Internals"),
         KnimeParameter("ROMVI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/reportOnMissingValues_Internals"),
-        KnimeParameter("Include Missing Values Category", XSD.boolean, True, 'includeMissValCat', path="model"), ### Very Important
+        KnimeParameter("Include Missing Values Category", XSD.boolean, True, 'includeMissValCat', path="model"),
         KnimeParameter("IMVCI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/includeMissValCat_Internals"),
         KnimeParameter("IMVCI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/includeMissValCat_Internals"),
-        KnimeParameter("frequency", XSD.string, "$$NUMERIC_COLUMN$$", 'freq', path="model"), ### Optional Very Important
+        KnimeParameter("frequency", XSD.string, "$$PIE_NUMERICAL$$", 'freq', path="model"),
         KnimeParameter("FrI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/freq_Internals"),
         KnimeParameter("FrI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -42,17 +42,17 @@ piechart_visualizer_implementation = KnimeImplementation(
                        path="model/processInMemory_Internals"),
         KnimeParameter("PIMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/processInMemory_Internals"),
-        KnimeParameter("title", XSD.string, "Pie Chart", 'title', path="model"), ### Very Important
+        KnimeParameter("title", XSD.string, "Pie Chart", 'title', path="model"),
         KnimeParameter("TI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/title_Internals"),
         KnimeParameter("TI EnabledStatus", XSD.boolean, True, "EnabledStatus",
                       path="model/title_Internals"),
-        KnimeParameter("subtitle", XSD.string, "", 'subtitle', path="model"), ### Very Important
+        KnimeParameter("subtitle", XSD.string, "", 'subtitle', path="model"),
         KnimeParameter("SUBI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/subtitle_Internals"),
         KnimeParameter("SUBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/subtitle_Internals"),
-        KnimeParameter("togglePie", XSD.boolean, False, 'togglePie', path="model"), ### Very Important [True-->Donut, False-->Pie]
+        KnimeParameter("togglePie", XSD.boolean, False, 'togglePie', path="model"),
         KnimeParameter("TPI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/togglePie_Internals"),
         KnimeParameter("TPI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -67,22 +67,22 @@ piechart_visualizer_implementation = KnimeImplementation(
                        path="model/insideTitle_Internals"),
         KnimeParameter("INI EnabledStatus", XSD.boolean, False, 'EnabledStatus',
                        path="model/insideTitle_Internals"),
-        KnimeParameter("customColors", XSD.boolean, False, 'customColors', path="model"), ### Optional Very Important
+        KnimeParameter("customColors", XSD.boolean, False, 'customColors', path="model"),
         KnimeParameter("CCI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/customColors_Internals"),
         KnimeParameter("CCI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/customColors_Internals"),
-        KnimeParameter("legend", XSD.boolean, True, 'legend', path="model"), ### Very Important 
+        KnimeParameter("legend", XSD.boolean, True, 'legend', path="model"),
         KnimeParameter("LEI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/legend_Internals"),
         KnimeParameter("LEI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/legend_Internals"),
-        KnimeParameter("showLabels", XSD.boolean, True, 'showLabels', path="model"), ### Very Important
+        KnimeParameter("showLabels", XSD.boolean, True, 'showLabels', path="model"),
         KnimeParameter("SLI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/showLabels_Internals"),
         KnimeParameter("SLI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/showLabels_Internals"),
-        KnimeParameter("labelType", XSD.string, "Value", 'labelType', path="model"), ### Very Important
+        KnimeParameter("labelType", XSD.string, "Value", 'labelType', path="model"),
         KnimeParameter("LTI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/labelType_Internals"),
         KnimeParameter("LTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -97,10 +97,10 @@ piechart_visualizer_implementation = KnimeImplementation(
                        path="model/displayFullscreenButton_Internals"),
         KnimeParameter("DFBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/displayFullscreenButton_Internals"),
-        KnimeParameter("svg_width", XSD.integer, 600, 'width', path="model/svg"), ### Very Important
-        KnimeParameter("svg_height", XSD.integer, 400, 'height', path="model/svg"), ### Very Important
-        KnimeParameter("svg_fullscreen", XSD.boolean, True, 'fullscreen', path="model/svg"), ### Very Important
-        KnimeParameter("svg_showFullscreen", XSD.boolean, True, 'showFullscreen', path="model/svg"), ### Very Important
+        KnimeParameter("svg_width", XSD.integer, 600, 'width', path="model/svg"), 
+        KnimeParameter("svg_height", XSD.integer, 400, 'height', path="model/svg"), 
+        KnimeParameter("svg_fullscreen", XSD.boolean, True, 'fullscreen', path="model/svg"), 
+        KnimeParameter("svg_showFullscreen", XSD.boolean, True, 'showFullscreen', path="model/svg"), 
         KnimeParameter("SVGI SettingsModelID", XSD.string, "SMID_svg", 'SettingsModelID',
                        path="model/svg_Internals"),
         KnimeParameter("SVGI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -195,39 +195,16 @@ piechart_visualizer_implementation = KnimeImplementation(
     knime_feature = KnimeJSViewsFeature,
 )
 
-# piechart_expparams = [
-#         list(piechart_visualizer_implementation.parameters.keys())[1], ### category column
-#         list(piechart_visualizer_implementation.parameters.keys())[4], ### aggregation type: [Occurrence Count, Sum, Average]
-#         list(piechart_visualizer_implementation.parameters.keys())[10], ### include missing value category: [True, False]
-#         list(piechart_visualizer_implementation.parameters.keys())[13], ### frequency column (optional)
-#         list(piechart_visualizer_implementation.parameters.keys())[19], ### pie chart visualization title
-#         list(piechart_visualizer_implementation.parameters.keys())[22], ### pie chart visualization subtitle
-#         list(piechart_visualizer_implementation.parameters.keys())[25], ### toggle Pie [True-->Donut, False-->Pie]
-#         list(piechart_visualizer_implementation.parameters.keys())[34], ### having custom colors for the plot(optional)
-#         list(piechart_visualizer_implementation.parameters.keys())[37], ### display legends for the visualization
-#         list(piechart_visualizer_implementation.parameters.keys())[40], ### display labels for the visualization
-#         list(piechart_visualizer_implementation.parameters.keys())[52], ### svg visualization width [default 600]
-#         list(piechart_visualizer_implementation.parameters.keys())[53], ### svg visualization height [default 400]
-# ]
-
-# piechart_params = list(piechart_visualizer_implementation.parameters.keys())
-
-exposed_params = [
-    'cat', ### category column
-    'includeMissValCat', ### include missing value category: [True, False]
-    'freq', ### frequency column (optional)
-    'title', ### pie chart visualization title
-    'togglePie' ### toggle Pie [True-->Donut, False-->Pie]
-]
 
 piechart_sum_visualizer_component = Component(
     name = "Pie Chart Sum Visualizer",
     implementation = piechart_visualizer_implementation,
     exposed_parameters = [
-        param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None), ### category column
+        next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'freq'), None) ### frequency column (optional)
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Sum")
+        ParameterSpecification(next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Sum")
     ],
     transformations = []
 )
@@ -236,10 +213,11 @@ piechart_count_visualizer_component = Component(
     name = "Pie Chart Count Visualizer",
     implementation = piechart_visualizer_implementation,
     exposed_parameters = [
-        param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params and param.knime_key != 'freq'
+        next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None),
+        next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'freq'), None)
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Occurence Count")
+        ParameterSpecification(next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Occurence Count")
     ],
     transformations = []
 )
@@ -248,10 +226,11 @@ piechart_avg_visualizer_component = Component(
     name = "Pie Chart Average Visualizer",
     implementation = piechart_visualizer_implementation,
     exposed_parameters = [
-        param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None),
+        next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'freq'), None)
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Average")
+        ParameterSpecification(next((param for param in piechart_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Average")
     ],
     transformations = []
 )

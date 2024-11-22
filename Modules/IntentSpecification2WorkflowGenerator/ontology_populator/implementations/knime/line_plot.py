@@ -12,8 +12,8 @@ lineplot_visualizer_implementation = KnimeImplementation(
         KnimeParameter("Maximum Number of Rows", XSD.int, 2500, 'maxRows', path="model"),
         KnimeParameter("Selection Column Name", XSD.string, "Selected (Line Plot)", 'selectionColumnName', path="model"),
         KnimeParameter("Auto Range Axes", XSD.boolean, True, 'autoRange', path="model"),
-        KnimeParameter("X Axis Label", XSD.string, "", 'xAxisLabel', path="model"), ### Optional
-        KnimeParameter("Y Axis Label", XSD.string, "", 'yAxisLabel', path="model"), ### Optional
+        KnimeParameter("X Axis Label", XSD.string, "", 'xAxisLabel', path="model"), 
+        KnimeParameter("Y Axis Label", XSD.string, "", 'yAxisLabel', path="model"), 
         KnimeParameter("X Axis Min", XSD.string, None, 'xAxisMin', path="model"),
         KnimeParameter("X Axis Max", XSD.string, None, 'xAxisMax', path="model"),
         KnimeParameter("Y Axis Min", XSD.string, None, 'yAxisMin', path="model"),
@@ -25,18 +25,16 @@ lineplot_visualizer_implementation = KnimeImplementation(
         KnimeParameter("Data Area Color", XSD.string, "rgba(255,255,255,1.0)", 'dataAreaColor', path="model"),
         KnimeParameter("Grid Color", XSD.string, "rgba(230,230,230,1.0)", 'gridColor', path="model"),
         KnimeParameter("Display Full Screen Button", XSD.boolean, True, 'displayFullscreenButton', path="model"),
-        KnimeParameter("Missing Value Method", XSD.string, "noGap", 'missingValueMethod', path="model"), ### Very Important ["noGap", "Gap", "removeColumn"]
+        KnimeParameter("Missing Value Method", XSD.string, "noGap", 'missingValueMethod', path="model"), 
         KnimeParameter("Show Warning In View", XSD.boolean, True, 'showWarningInView', path="model"),
-        KnimeParameter("X Axis Column", XSD.string, "$$ANY_COLUMN$$", 'xCol', condition="$$X_COL$$", path="model"), ### Very Important
+        KnimeParameter("Lineplot X Axis Column", XSD.string, "$$LINEPLOT_COMPLETE$$", 'xCol', condition="$$LINEPLOT_X$$", path="model"), 
         KnimeParameter("Y Columns Filter Type", XSD.string, "STANDARD", 'filter-type', path="model/yCols"),
-        KnimeParameter("Y Columns Included Names Array Size", RDF.List, "$$ANY_COLUMN$$", 'included_names',
-                       condition = "$$INCLUDED$$", path="model/yCols"), ### Very Important
-        ### Creation of Parameters: KnimeParameter("Included Y Axis Column", XSD.string, "$$COLUMN_NAME$$", '$$COLUMN_ORDER$$', path="model/yCols/included_names")
-        KnimeParameter("Y Columns Excluded Names Array Size", RDF.List, "$$ANY_COLUMN$$", 'excluded_names',
-                       condition = "$$EXCLUDED$$", path="model/yCols"), ### Very Important
-        ### Creation of Parameters: KnimeParameter("Excluded Y Axis Column", XSD.string, "$$COLUMN_NAME$$", '$$COLUMN_ORDER$$', path="model/yCols/excluded_names")
+        KnimeParameter("Scatterplot Included Y Columns", RDF.List, "$$LINEPLOT_COMPLETE$$", 'included_names',
+                       condition = "$$LINEPLOT_INCLUDED$$", path="model/yCols"), 
+        KnimeParameter("Scatterplot Excluded Y Columns", RDF.List, "$$LINEPLOT_COMPLETE$$", 'excluded_names',
+                       condition = "$$LINEPLOT_EXCLUDED$$", path="model/yCols"), 
         KnimeParameter("Enforce option", XSD.string, "EnforceExclusion", 'enforce_option', path="model/yCols"),
-        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', path="model/yCols/name_pattern"), ### Very Important
+        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', path="model/yCols/name_pattern"), 
         KnimeParameter("NP Type", XSD.string, "Wildcard", 'type', path="model/yCols/name_pattern"),
         KnimeParameter("NP Case Sensitive", XSD.boolean, True, 'caseSensitive', path="model/yCols/name_pattern"),
         KnimeParameter("NP Exclude Matching", XSD.boolean, False, 'excludeMatching', path="model/yCols/name_pattern"),
@@ -46,7 +44,7 @@ lineplot_visualizer_implementation = KnimeImplementation(
         KnimeParameter("Datatype Typelist Double Value", XSD.boolean, False, 'org.knime.core.data.DoubleValue', path="model/yCols/datatype/typelist"),
         KnimeParameter("Datatype Typelist Long Value", XSD.boolean, False, 'org.knime.core.data.LongValue', path="model/yCols/datatype/typelist"),
         KnimeParameter("Datatype Typelist Date and Time Value", XSD.boolean, False, 'org.knime.core.data.date.DateAndTimeValue', path="model/yCols/datatype/typelist"),
-        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), ### Very Important,
+        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), 
         KnimeParameter("Use Domain Information", XSD.boolean, False, 'useDomainInformation', path="model"),
         KnimeParameter("Always Show Origin", XSD.boolean, False, 'enforceOrigin', path="model"),
         KnimeParameter("Enable Line Size Change", XSD.boolean, False, 'enableLineSizeChange', path="model"),
@@ -74,27 +72,27 @@ lineplot_visualizer_implementation = KnimeImplementation(
                        path="model/dateTimeFormats/globalDateFormat_Internals"),
         KnimeParameter("GDFI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalDateFormat_Internals"),
-        KnimeParameter("Global Local Date Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Local Date Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GLDFI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalLocalDateFormat_Internals"),
         KnimeParameter("GLDFI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalLocalDateFormat_Internals"),
-        KnimeParameter("Global Local Date and Time Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateTimeFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Local Date and Time Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateTimeFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GLDTI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalLocalDateTimeFormat_Internals"),
         KnimeParameter("GLDTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalLocalDateTimeFormat_Internals"),
-        KnimeParameter("Global Local Time Format", XSD.string, "HH:mm:ss", 'globalLocalTimeFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Local Time Format", XSD.string, "HH:mm:ss", 'globalLocalTimeFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GLTFI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalLocalTimeFormat_Internals"),
         KnimeParameter("GLTFI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalLocalTimeFormat_Internals"),
-        KnimeParameter("Global Zoned Date and Time Format", XSD.string, "YYYY-MM-DD z", 'globalZonedDateTimeFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Zoned Date and Time Format", XSD.string, "YYYY-MM-DD z", 'globalZonedDateTimeFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GZDTI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalZonedDateTimeFormat_Internals"),
         KnimeParameter("GZDTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalZonedDateTimeFormat_Internals"),
-        KnimeParameter("Time Zone", XSD.string, "Europe/Madrid", 'timezone', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Time Zone", XSD.string, "Europe/Madrid", 'timezone', path="model/dateTimeFormats"), 
         KnimeParameter("TZI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/timezone_Internals"),
         KnimeParameter("TZI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -129,19 +127,12 @@ lineplot_visualizer_implementation = KnimeImplementation(
 
 )
 
-lineplot_params = list(lineplot_visualizer_implementation.parameters.keys())
-
-exposed_params = [
-    'xCol', ### x-axis column
-    # Creating yCols depending on the input, ### y-axis column
-    'chartTitle', ### Title of the scatter plot
-]
-
 lineplot_visualizer_component = Component(
     name = "Line Plot Visualizer",
     implementation = lineplot_visualizer_implementation,
     exposed_parameters=[
-        param for param in lineplot_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in lineplot_visualizer_implementation.parameters.keys() if param.knime_key == 'xCol'), None), ### x-axis column
+        next((param for param in lineplot_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None) ### y-axis columns
     ],
     transformations = [
         CopyTransformation(1, 2)

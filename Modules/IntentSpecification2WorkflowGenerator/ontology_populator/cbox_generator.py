@@ -83,7 +83,7 @@ def add_algorithms(cbox):
         (cb.RobustNormalization, cb.Normalization),
 
         # Data Management
-        (cb.TrainTestSplit, cb.DataManagement),
+        (cb.Partitioning, cb.DataManagement),
         (cb.LabelExtraction, cb.DataManagement),
 
         # Data Visualization

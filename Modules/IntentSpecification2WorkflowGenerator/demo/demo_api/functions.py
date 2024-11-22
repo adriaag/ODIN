@@ -8,13 +8,89 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from pipeline_generator.optimized_pipeline_generator import *
 
 
+# def abstract_planner(ontology: Graph, intent: Graph, visualization_parameters: Dict[str, List[str]]) -> Tuple[
+#     Dict[Node, Dict[Node, List[Node]]], Dict[Node, List[Node]], Dict[str, Union[str, List[str]]]]:
+#     dataset, task, algorithm, intent_iri = get_intent_info(intent)
+
+#     viz_params = visualization_parameters
+
+#     algs = get_algorithms_from_task(ontology, task)
+
+#     impls = get_potential_implementations(ontology, task, algorithm)
+
+#     algs_shapes = {}
+#     alg_plans = {alg: [] for alg in algs}
+#     for impl in impls:
+#         alg = next(ontology.objects(impl[0], tb.implements)), 
+#         (impl[0], RDF.type, tb.Implementation) in ontology and (tb.ApplierImplementation not in ontology.objects(impl[0], RDF.type))
+
+#         algs_shapes[alg[0]] = impl[1::][0][0]
+
+#         alg_plans[alg[0]].append(impl)
+
+    
+#     plans = {}
+#     for alg in algs:
+#         if cb.TrainTabularDatasetShape in algs_shapes[alg]:
+#             trainer = cb.term(alg.fragment + '-Train')
+#             plans[alg] = {
+#                 cb.DataLoading: [cb.TrainTestSplit],
+#                 cb.TrainTestSplit: [trainer, alg],
+#                 trainer: [alg],
+#                 alg: [cb.DataStoring],
+#                 cb.DataStoring: []
+#             }
+#         else:
+#             plans[alg] = {
+#                 cb.DataLoading: [alg],
+#                 alg: [],
+#             }
+
+#     return plans, alg_plans, viz_params
+
+
+def connect_algorithms(ontology, algos_list):
+    impls_algos = {imp : algo + "-Train" if "learner" in imp.fragment else algo
+                   for algo in algos_list for (imp, _) in get_all_implementations(ontology, None, algo)}
+
+    linked_impls = {}
+
+    impls_list = list(impls_algos.keys())
+    
+    for i in range(len(impls_list) - 1):
+        preceding_impl = impls_list[i]
+        following_impls = impls_list[i + 1:]
+
+        out_specs = get_implementation_output_specs(ontology, preceding_impl)
+        out_spec_set = {out_sp for out_spec in out_specs for out_sp in out_spec}
+
+        
+        for following_impl in following_impls:
+
+            in_specs = get_implementation_input_specs(ontology, following_impl)
+            in_spec_set = {in_sp for in_spec in in_specs for in_sp in in_spec}
+
+            if out_spec_set & in_spec_set:
+                
+                preceding_impl_key = impls_algos[preceding_impl]
+                following_impl_key = impls_algos[following_impl]
+
+                linked_impls.setdefault(preceding_impl_key, [])
+                if following_impl_key not in linked_impls[preceding_impl_key]:
+                    linked_impls[preceding_impl_key].append(following_impl_key)
+    
+    linked_impls[following_impl_key] = []
+
+    return linked_impls
+
+
 def abstract_planner(ontology: Graph, intent: Graph, visualization_parameters: Dict[str, List[str]]) -> Tuple[
     Dict[Node, Dict[Node, List[Node]]], Dict[Node, List[Node]], Dict[str, Union[str, List[str]]]]:
-    dataset, task, algorithm, intent_iri = get_intent_info(intent)
-
     viz_params = visualization_parameters
 
-    algs = get_algorithms_from_task(ontology, task)
+    dataset, task, algorithm, intent_iri = get_intent_info(intent)
+
+    algs = [algorithm] if algorithm is not None else get_algorithms_from_task(ontology, task)
 
     impls = get_potential_implementations(ontology, task, algorithm)
 
@@ -27,24 +103,13 @@ def abstract_planner(ontology: Graph, intent: Graph, visualization_parameters: D
         algs_shapes[alg[0]] = impl[1::][0][0]
 
         alg_plans[alg[0]].append(impl)
-
     
     plans = {}
     for alg in algs:
         if cb.TrainTabularDatasetShape in algs_shapes[alg]:
-            trainer = cb.term(alg.fragment + '-Train')
-            plans[alg] = {
-                cb.DataLoading: [cb.TrainTestSplit],
-                cb.TrainTestSplit: [trainer, alg],
-                trainer: [alg],
-                alg: [cb.DataStoring],
-                cb.DataStoring: []
-            }
+            plans[alg] = connect_algorithms(ontology, [cb.DataLoading, cb.Partitioning, alg, cb.DataStoring])
         else:
-            plans[alg] = {
-                cb.DataLoading: [alg],
-                alg: [],
-            }
+            plans[alg] = connect_algorithms(ontology, [cb.DataLoading, alg])
 
     return plans, alg_plans, viz_params
 

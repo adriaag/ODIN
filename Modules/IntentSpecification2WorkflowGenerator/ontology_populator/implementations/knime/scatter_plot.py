@@ -11,9 +11,9 @@ scatterplot_visualizer_implementation = KnimeImplementation(
         KnimeParameter("generateImage", XSD.boolean, True, 'generateImage', path="model"),
         KnimeParameter("Maximum Number of Rows", XSD.int, 2500, 'maxRows', path="model"),
         KnimeParameter("Selection Column Name", XSD.string, "Selected (Scatter Plot)", 'selectionColumnName', path="model"),
-        KnimeParameter("X Axis Column", XSD.string, "$$ANY_COLUMN$$", 'xCol', condition="$$X_COL$$", path="model"), ### Very Important
-        KnimeParameter("Y Axis Column", XSD.string, "$$ANY_COLUMN$$", 'yCol', condition="$$Y_COL$$", path="model"), ### Very Important
-        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), ### Very Important,
+        KnimeParameter("Scatterplot X Axis Column", XSD.string, "$$SCATTERPLOT_COLUMN$$", 'xCol', condition="$$SCATTERPLOT_X$$", path="model"), 
+        KnimeParameter("Scatterplot Y Axis Column", XSD.string, "$$SCATTERPLOT_COLUMN$$", 'yCol', condition="$$SCATTERPLOT_Y$$", path="model"), 
+        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), 
         KnimeParameter("X Axis Label", XSD.string, "", 'xAxisLabel', path="model"), 
         KnimeParameter("Y Axis Label", XSD.string, "", 'yAxisLabel', path="model"),
         KnimeParameter("X Axis Min", XSD.string, None, 'xAxisMin', path="model"),
@@ -35,27 +35,27 @@ scatterplot_visualizer_implementation = KnimeImplementation(
                        path="model/dateTimeFormats/globalDateFormat_Internals"),
         KnimeParameter("GDFI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalDateFormat_Internals"),
-        KnimeParameter("Global Local Date Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Local Date Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GLDFI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalLocalDateFormat_Internals"),
         KnimeParameter("GLDFI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalLocalDateFormat_Internals"),
-        KnimeParameter("Global Local Date and Time Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateTimeFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Local Date and Time Format", XSD.string, "YYYY-MM-DD", 'globalLocalDateTimeFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GLDTI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalLocalDateTimeFormat_Internals"),
         KnimeParameter("GLDTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalLocalDateTimeFormat_Internals"),
-        KnimeParameter("Global Local Time Format", XSD.string, "HH:mm:ss", 'globalLocalTimeFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Local Time Format", XSD.string, "HH:mm:ss", 'globalLocalTimeFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GLTFI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalLocalTimeFormat_Internals"),
         KnimeParameter("GLTFI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalLocalTimeFormat_Internals"),
-        KnimeParameter("Global Zoned Date and Time Format", XSD.string, "YYYY-MM-DD z", 'globalZonedDateTimeFormat', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Global Zoned Date and Time Format", XSD.string, "YYYY-MM-DD z", 'globalZonedDateTimeFormat', path="model/dateTimeFormats"), 
         KnimeParameter("GZDTI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/globalZonedDateTimeFormat_Internals"),
         KnimeParameter("GZDTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/dateTimeFormats/globalZonedDateTimeFormat_Internals"),
-        KnimeParameter("Time Zone", XSD.string, "Europe/Madrid", 'timezone', path="model/dateTimeFormats"), ### Very Important
+        KnimeParameter("Time Zone", XSD.string, "Europe/Madrid", 'timezone', path="model/dateTimeFormats"), 
         KnimeParameter("TZI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/dateTimeFormats/timezone_Internals"),
         KnimeParameter("TZI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -64,7 +64,7 @@ scatterplot_visualizer_implementation = KnimeImplementation(
         KnimeParameter("Use Domain Information", XSD.boolean, False, 'useDomainInformation', path="model"),
         KnimeParameter("Always Show Origin", XSD.boolean, False, 'enforceOrigin', path="model"),
         KnimeParameter("Show Selected Only", XSD.boolean, False, 'showSelectedOnly', path="model"),
-        KnimeParameter("Chart Title", XSD.string, "", 'chartTitle', path="model"), ### Very Important
+        KnimeParameter("Chart Title", XSD.string, "", 'chartTitle', path="model"), 
         KnimeParameter("Chart Subtitle", XSD.string, "", 'chartSubtitle', path="model"),
         KnimeParameter("Show Grid", XSD.boolean, False, 'showGrid', path="model"),
         KnimeParameter("Image Width", XSD.int, 800, 'imageWidth', path="model"),
@@ -106,7 +106,7 @@ scatterplot_visualizer_implementation = KnimeImplementation(
     ],
     output = [
         cb.ScatterPlotVisualizationShape,
-        cb.TabularDataset
+        cb.TabularDatasetShape
     ],
     implementation_type = tb.VisualizerImplementation,
     knime_node_factory = 'org.knime.js.base.node.viz.plotter.scatterSelectionAppender.ScatterPlotNodeFactory',
@@ -115,19 +115,13 @@ scatterplot_visualizer_implementation = KnimeImplementation(
 
 )
 
-# scatterplot_params = list(scatterplot_visualizer_implementation.parameters.keys())
-
-exposed_params = [
-    'xCol', ### x-axis column
-    'yCol', ### y-axis column
-    'chartTitle', ### Title of the scatter plot
-]
 
 scatterplot_visualizer_component = Component(
     name = "Scatter Plot Visualizer",
     implementation = scatterplot_visualizer_implementation,
     exposed_parameters=[
-        param for param in scatterplot_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in scatterplot_visualizer_implementation.parameters.keys() if param.knime_key == 'xCol'), None), 
+        next((param for param in scatterplot_visualizer_implementation.parameters.keys() if param.knime_key == 'yCol'), None)
     ],
     transformations = [
         CopyTransformation(1, 2),

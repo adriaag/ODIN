@@ -144,13 +144,14 @@ csv_reader_local_component = Component(
         LoaderTransformation(),
     ],
     overriden_parameters=[
-        # ParameterSpecification(list(csv_reader_implementation.parameters.keys())[1], True),
-        # ParameterSpecification(list(csv_reader_implementation.parameters.keys())[2], 'LOCAL'),
-        ParameterSpecification([param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'location_present'][0], True),
-        ParameterSpecification([param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'file_system_type'][0], 'LOCAL')
+        # ParameterSpecification([param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'location_present'][0], True),
+        # ParameterSpecification([param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'file_system_type'][0], 'LOCAL')
+        ParameterSpecification(next((param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'location_present'), None), True),
+        ParameterSpecification(next((param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'file_system_type'), None), "LOCAL")
     ],
     exposed_parameters=[
-        list(csv_reader_implementation.parameters.keys())[0]
+        # list(csv_reader_implementation.parameters.keys())[0]
+        next((param for param in csv_reader_implementation.parameters.keys() if param.knime_key == 'path' and param.label == 'Reader File'), None)
     ],
 )
 
@@ -247,7 +248,7 @@ csv_writer_implementation = KnimeImplementation(
         KnimeParameter('character_set', XSD.string, 'windows-1252', 'character_set',
                        path='model/encoding'),
     ],
-    input=[cb.TabularDataset],
+    input=[cb.TabularDatasetShape],
     output=[],
     knime_node_factory = 'org.knime.base.node.io.filehandling.csv.writer.CSVWriter2NodeFactory',
     knime_bundle = KnimeBaseBundle,
@@ -259,22 +260,20 @@ csv_writer_local_component = Component(
     implementation=csv_writer_implementation,
     transformations=[],
     overriden_parameters=[
-        # ParameterSpecification(list(csv_writer_implementation.parameters.keys())[1], True),
-        # ParameterSpecification(list(csv_writer_implementation.parameters.keys())[2], 'LOCAL'),
-        ParameterSpecification([param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'location_present'][0], True),
-        ParameterSpecification([param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'file_system_type'][0], 'LOCAL')
+        ParameterSpecification(next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'location_present'), None), True),
+        ParameterSpecification(next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'file_system_type'), None), "LOCAL")
     ],
     exposed_parameters=[
-        list(csv_writer_implementation.parameters.keys())[0],
-        list(csv_writer_implementation.parameters.keys())[3],
-        list(csv_writer_implementation.parameters.keys())[4],
-        list(csv_writer_implementation.parameters.keys())[18],
-        list(csv_writer_implementation.parameters.keys())[19],
-        list(csv_writer_implementation.parameters.keys())[20],
-        list(csv_writer_implementation.parameters.keys())[21],
-        list(csv_writer_implementation.parameters.keys())[22],
-        list(csv_writer_implementation.parameters.keys())[23],
-        list(csv_writer_implementation.parameters.keys())[24],
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'path'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'create_missing_folders'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'if_path_exists'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'column_delimiter'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'row_delimiter'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'quote_char'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'quote_escape_char'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'write_column_header'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'skip_column_header_on_append'), None),
+        next((param for param in csv_writer_implementation.parameters.keys() if param.knime_key == 'write_row_header'), None),
     ]
 
 )

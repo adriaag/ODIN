@@ -13,25 +13,23 @@ histogram_visualizer_implementation = KnimeImplementation(
                        path="model/generateImagemodel_Internals"),
         KnimeParameter("GIMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/generateImagemodel_Internals"),
-        KnimeParameter("category", XSD.string, "$$NUMERICAL$$", 'cat', path="model"), ### Very Important
+        KnimeParameter("Histogram Category", XSD.string, "$$HISTOGRAM_NUMERICAL$$", 'cat', path="model"), 
         KnimeParameter("CI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/cat_Internals"),
         KnimeParameter("CI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/cat_Internals"),
-        KnimeParameter("Histogram Aggregation", XSD.string, "Occurrence Count", 'aggr', path="model"), ### Very Important [Occurrence Count, Sum, Average]
+        KnimeParameter("Histogram Aggregation", XSD.string, "Occurrence Count", 'aggr', path="model"), 
         KnimeParameter("AGGI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/aggr_Internals"),
         KnimeParameter("AGGI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/aggr_Internals"),
-        KnimeParameter("Filter Type", XSD.string, "STANDARD", 'filter-type', path="model/freq"), ### Optional Very Important
-        KnimeParameter("Included Names Columns", RDF.List, "$$NUMERIC_COLUMNS$$", 'included_names',
-                       condition="$$INCLUDED$$", path="model/freq"), ### TO BE CHECKED
-        ### Creation of Parameters: KnimeParameter("Included Columns", XSD.string, "$$COLUMN_NAME$$", '$$COLUMN_ORDER$$', path="model/freq/included_names")
-        KnimeParameter("Excluded Names Columns", RDF.List, "$$NUMERIC_COLUMNS$$", 'excluded_names',
-                       condition="$$EXCLUDED$$", path="model/freq"), ### TO BE CHECKED
-        ### Creation of Parameters: KnimeParameter("Excluded Columns", XSD.string, "$$COLUMN_NAME$$", '$$COLUMN_ORDER$$', path="model/freq/excluded_names")
+        KnimeParameter("Filter Type", XSD.string, "STANDARD", 'filter-type', path="model/freq"), 
+        KnimeParameter("Included Frequency Columns", RDF.List, "$$HISTOGRAM_NUMERICAL$$", 'included_names',
+                       condition="$$HISTOGRAM_INCLUDED$$", path="model/freq"), 
+        KnimeParameter("Excluded Frequency Columns", RDF.List, "$$HISTOGRAM_FREQUENCY$$", 'excluded_names',
+                       condition="$$HISTOGRAM_EXCLUDED$$", path="model/freq"), 
         KnimeParameter("Enforce Option", XSD.string, "EnforceExclusion", 'enforce_option', path="model/freq"),
-        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', path="model/freq/name_pattern"), ### Need to Be Checked
+        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', path="model/freq/name_pattern"), 
         KnimeParameter("NP Type", XSD.string, "Wildcard", 'type', path="model/freq/name_pattern"),
         KnimeParameter("Np Case Sensitive", XSD.boolean, True, 'caseSensitive', path="model/freq/name_pattern"),
         KnimeParameter("NP Exclude Matching", XSD.boolean, False, 'excludeMatching', path="model/freq/name_pattern"),
@@ -44,27 +42,27 @@ histogram_visualizer_implementation = KnimeImplementation(
                        path="model/processInMemory_Internals"),
         KnimeParameter("PIMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/processInMemory_Internals"),
-        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"), ### Very Important
+        KnimeParameter("Report On Missing Values", XSD.boolean, True, 'reportOnMissingValues', path="model"),
         KnimeParameter("ROMVI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/reportOnMissingValues_Internals"),
         KnimeParameter("ROMVI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/reportOnMissingValues_Internals"),
-        KnimeParameter("Include Missing Values Category", XSD.boolean, True, 'includeMissValCat', path="model"), ### Very Important
+        KnimeParameter("Include Missing Values Category", XSD.boolean, True, 'includeMissValCat', path="model"), 
         KnimeParameter("IMVCI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/includeMissValCat_Internals"),
         KnimeParameter("IMVCI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/includeMissValCat_Internals"),
-        KnimeParameter("Bin Method", XSD.string, "Fixed number of bins", 'bin_method', path="model"), ### Very Important ["Fixed number of bins", "Sample quantiles"]
+        KnimeParameter("Bin Method", XSD.string, "Fixed number of bins", 'bin_method', path="model"), 
         KnimeParameter("BMI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/bin_method_Internals"),
         KnimeParameter("BMI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/bin_method_Internals"),
-        KnimeParameter("Number of Bins", XSD.int, 5, 'num_bins', path="model"), ### Very Important
+        KnimeParameter("Number of Bins", XSD.int, 5, 'num_bins', path="model"), 
         KnimeParameter("NBI SettingsModelID", XSD.string, "SMID_integer", 'SettingsModelID',
                        path="model/num_bins_Internals"),
         KnimeParameter("NBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/num_bins_Internals"),
-        KnimeParameter("Bin to Equal", XSD.string, "width", 'bin_equal', path="model"), ### Very Important ["width", "frequency"]
+        KnimeParameter("Bin to Equal", XSD.string, "width", 'bin_equal', path="model"), 
         KnimeParameter("BEI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/bin_equal_Internals"),
         KnimeParameter("BEI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -74,7 +72,7 @@ histogram_visualizer_implementation = KnimeImplementation(
                        path="model/bin_quantiles_Internals"),
         KnimeParameter("BQI EnabledStatus", XSD.boolean, False, 'EnabledStatus',
                        path="model/bin_quantiles_Internals"),
-        KnimeParameter("Bin Naming", XSD.string, "Midpoints", 'bin_naming', path="model"), ### Very Important ["Midpoints", "Borders", "Numbered"]
+        KnimeParameter("Bin Naming", XSD.string, "Midpoints", 'bin_naming', path="model"), 
         KnimeParameter("BNI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/bin_naming_Internals"),
         KnimeParameter("BNI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -84,12 +82,12 @@ histogram_visualizer_implementation = KnimeImplementation(
                        path="model/bin_force_int_Internals"),
         KnimeParameter("FIBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/bin_force_int_Internals"),
-        KnimeParameter("Number Format Settings", XSD.string, "Default Formatting", 'num_format', path="model"), ### ["Default Formatting", "Advanced Formatting"]
+        KnimeParameter("Number Format Settings", XSD.string, "Default Formatting", 'num_format', path="model"), 
         KnimeParameter("FIBI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/num_format_Internals"),
         KnimeParameter("FIBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/num_format_Internals"),
-        KnimeParameter("Output Format", XSD.string, "Standard String", 'out_format', path="model"), ### ["Standard String", "Plain String (no exponent)", "Engineering String"]
+        KnimeParameter("Output Format", XSD.string, "Standard String", 'out_format', path="model"), 
         KnimeParameter("FIBI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/out_format_Internals"),
         KnimeParameter("FIBI EnabledStatus", XSD.boolean, False, 'EnabledStatus',
@@ -99,22 +97,22 @@ histogram_visualizer_implementation = KnimeImplementation(
                        path="model/format_precision_Internals"),
         KnimeParameter("PI EnabledStatus", XSD.boolean, False, 'EnabledStatus',
                        path="model/format_precision_Internals"),
-        KnimeParameter("Precision Mode", XSD.string, "Decimal places", 'format_prec_mode', path="model"), ### ["Decimal places", "Significant figures"]
+        KnimeParameter("Precision Mode", XSD.string, "Decimal places", 'format_prec_mode', path="model"), 
         KnimeParameter("PMI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/format_prec_mode_Internals"),
         KnimeParameter("PMI EnabledStatus", XSD.boolean, False, 'EnabledStatus',
                        path="model/format_prec_mode_Internals"),
-        KnimeParameter("Rounding Mode", XSD.string, "HALF_UP", 'format_rounding', path="model"), ### ["HALF_UP", "HALF_DOWN", "HALF_EVEN", "UP", "DOWN", "CELILING", "FLOOR"]
+        KnimeParameter("Rounding Mode", XSD.string, "HALF_UP", 'format_rounding', path="model"), 
         KnimeParameter("RMI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/format_rounding_Internals"),
         KnimeParameter("RMI EnabledStatus", XSD.boolean, False, 'EnabledStatus',
                        path="model/format_rounding_Internals"),
-        KnimeParameter("Title", XSD.string, "Histogram", 'title', path="model"), ### Very Important
+        KnimeParameter("Title", XSD.string, "Histogram", 'title', path="model"), 
         KnimeParameter("TI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/title_Internals"),
         KnimeParameter("TI EnabledStatus", XSD.boolean, True, "EnabledStatus",
                       path="model/title_Internals"),
-        KnimeParameter("Subtitle", XSD.string, "", 'subtitle', path="model"), ### Very Important
+        KnimeParameter("Subtitle", XSD.string, "", 'subtitle', path="model"), 
         KnimeParameter("SUBI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/subtitle_Internals"),
         KnimeParameter("SUBI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -129,7 +127,7 @@ histogram_visualizer_implementation = KnimeImplementation(
                        path="model/freqLabel_Internals"),
         KnimeParameter("FALI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/freqLabel_Internals"),
-        KnimeParameter("Chart Type", XSD.string, "Grouped", 'chartType', path="model"), ### Very Important [Grouped, Stacked]
+        KnimeParameter("Chart Type", XSD.string, "Grouped", 'chartType', path="model"), 
         KnimeParameter("CTI SettingsModelID", XSD.string, "SMID_string", 'SettingsModelID',
                        path="model/chartType_Internals"),
         KnimeParameter("CTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -144,7 +142,7 @@ histogram_visualizer_implementation = KnimeImplementation(
                        path="model/tooltip_Internals"),
         KnimeParameter("TTI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
                        path="model/tooltip_Internals"),
-        KnimeParameter("Histogram Orientation", XSD.boolean, False, 'orientation', path="model"), ### Very Important
+        KnimeParameter("Histogram Orientation", XSD.boolean, False, 'orientation', path="model"), 
         KnimeParameter("HI SettingsModelID", XSD.string, "SMID_boolean", 'SettingsModelID',
                        path="model/orientation_Internals"),
         KnimeParameter("HI EnabledStatus", XSD.boolean, True, 'EnabledStatus',
@@ -253,27 +251,15 @@ histogram_visualizer_implementation = KnimeImplementation(
 
 )
 
-histogram_params = list(histogram_visualizer_implementation.parameters.keys())
-
-exposed_params = [
-    'cat', ### category column
-    'includeMissValCat', ### include missing value category: [True, False]
-    'bin_method', ### binning method: ["Fixed number of bins", "Sample quantiles"]
-    'num_bins', ### number of bins used in fixed binning
-    'bin_equal', ### Bin equality: ["width", "frequency"]
-    'title', ### heatmap visualization title
-    'chartType', ### chart type: ['Grouped', 'Stacked']
-    'orientation', ### heatmap orientaion
-]
-
 histogram_sum_visualizer_component = Component(
     name = "Histogram Sum Visualizer",
     implementation = histogram_visualizer_implementation,
     exposed_parameters = [
-        param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None), ### category column
+        next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None) ### frequency columns
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Sum")
+        ParameterSpecification(next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Sum") ### aggregation method
     ],
     transformations = []
 )
@@ -282,10 +268,11 @@ histogram_count_visualizer_component = Component(
     name = "Histogram Count Visualizer",
     implementation = histogram_visualizer_implementation,
     exposed_parameters = [
-        param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None), 
+        next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None)
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Occurrence Count")
+        ParameterSpecification(next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Occurence Count")
     ],
     transformations = []
 )
@@ -294,10 +281,11 @@ histogram_avg_visualizer_component = Component(
     name = "Histogram Average Visualizer",
     implementation = histogram_visualizer_implementation,
     exposed_parameters = [
-        param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'cat'), None), 
+        next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None)
     ],
     overriden_parameters = [
-        ParameterSpecification([param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'][0], "Average")
+        ParameterSpecification(next((param for param in histogram_visualizer_implementation.parameters.keys() if param.knime_key == 'aggr'), None), "Average")
     ],
     transformations = []
 )

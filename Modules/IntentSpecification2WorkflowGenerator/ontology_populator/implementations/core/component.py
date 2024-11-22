@@ -18,7 +18,7 @@ class Component:
     def __init__(self, name: str, implementation: Implementation, transformations: List[Transformation],
                  exposed_parameters: List[Parameter] = None,
                  overriden_parameters: List[ParameterSpecification] = None,
-                 rules: Dict[tuple[URIRef, float], List[Dict[str, Union[URIRef, int]]]] = None,
+                 rules: Dict[Tuple[URIRef, float], List[Dict[str, Union[URIRef, int]]]] = None,
                  counterpart: Union['Component', List['Component']] = None,
                  namespace: Namespace = cb) -> None:
         super().__init__()

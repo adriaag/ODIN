@@ -53,7 +53,7 @@ def run_abstract_planner():
     visualization_parameters = data.get('visualization_parameters', '')
 
     # print(f'INTENT: {intent_name}')
-    print(f'VIZ PARAMS: {visualization_parameters}')
+    # print(f'VIZ PARAMS: {visualization_parameters}')
     # print(f'TASK: {task}')
 
     intent_graph.add((ab.term(intent_name), RDF.type, tb.Intent))
@@ -64,7 +64,6 @@ def run_abstract_planner():
     intent = intent_graph
     viz_params = visualization_parameters
 
-    # print(f'INTENT GRAPH: {intent}')
 
     print('ABOUT TO RUN ABSTRACT PLANNING...')
 
@@ -90,6 +89,41 @@ def get_dataset_columns():
     dataset_columns = {n.fragment.split("/")[1]: n for n in ontology.subjects(RDF.type, dmop.Column)
                        if (dataset_uri, dmop.hasColumn, n) in ontology}
     return dataset_columns
+
+# @app.post('/exposed_parameters')
+# def get_exposed_parameters():
+#     data = request.json
+#     task = data.get('problem', '')
+#     algorithm = data.get('algorithm', '')
+
+#     exposed_parameters = {
+#         exp_param: {
+#             "label": label,
+#             "value": value,
+#             "condition": condition
+#         }
+#         for exp_param, label, value, condition in ontology.query(
+#             f"""
+#             PREFIX tb: <http://example.org/ontology#>
+#             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+#             SELECT DISTINCT ?exp_param ?label ?value ?condition
+#             WHERE {{
+#                 <{task}> a tb:Task .
+#                 {('?algorithm' if algorithm is None else f'<{algorithm}>')} tb:solves <{task}> .
+#                 ?imp tb:implements ?algorithm .
+#                 ?com tb:hasImplementation ?imp ;
+#                     tb:exposesParameter ?exp_param .
+#                 ?exp_param tb:has_defaultvalue ?value ;
+#                         tb:has_condition ?condition ;
+#                         rdfs:label ?label .
+#             }}
+#             """
+#         )
+#     }
+
+#     return exposed_parameters
+
+
 
 @app.post('/dataset_categorical_columns')
 def get_dataset_categorical_columns():

@@ -16,12 +16,12 @@ heatmap_visualizer_implementation = KnimeImplementation(
         KnimeParameter("Image Height", XSD.int, 600, 'imageHeight', path="model"),
         KnimeParameter("Resize to Full Window", XSD.boolean, True, 'resizeToWindow', path="model"),
         KnimeParameter("Display Full Screen Button", XSD.boolean, True, 'displayFullscreenButton', path="model"),
-        KnimeParameter("Chart Title", XSD.string, "", 'chartTitle', path="model"), ### Very Important
+        KnimeParameter("Chart Title", XSD.string, "", 'chartTitle', path="model"), 
         KnimeParameter("Chart Subtitle", XSD.string, "", 'chartSubtitle', path="model"),
-        KnimeParameter("Minimum Value", XSD.double, 0.0, 'minValue', path="model"), ### Very Important
-        KnimeParameter("Maximum Value", XSD.double, 100.0, 'maxValue', path="model"), ### Very Important
-        KnimeParameter("Use Custom Min", XSD.boolean, False, 'useCustomMin', path="model"), ### Very Important
-        KnimeParameter("Use Custom Max", XSD.boolean, False, 'useCustomMax', path="model"), ### Very Important
+        KnimeParameter("Minimum Value", XSD.double, 0.0, 'minValue', path="model"), 
+        KnimeParameter("Maximum Value", XSD.double, 100.0, 'maxValue', path="model"), 
+        KnimeParameter("Use Custom Min", XSD.boolean, False, 'useCustomMin', path="model"), 
+        KnimeParameter("Use Custom Max", XSD.boolean, False, 'useCustomMax', path="model"), 
         KnimeParameter("Enable View Configuration", XSD.boolean, True, 'enableViewConfiguration', path="model"),
         KnimeParameter("Enable Title Change", XSD.boolean, True, 'enableTitleChange', path="model"),
         KnimeParameter("Enable Color Mode Edit", XSD.boolean, True, 'enableColorModeEdit', path="model"),
@@ -41,14 +41,12 @@ heatmap_visualizer_implementation = KnimeImplementation(
         KnimeParameter("Upper Out of Range Color", XSD.string, "#000000", 'upperOutOfRangeColor', path="model"),
         KnimeParameter("Lower Out of Range Color", XSD.string, "#000000", 'lowerOutOfRangeColor', path="model"),
         KnimeParameter("Columns Filter Type", XSD.string, "STANDARD", 'filter-type', path="model/columns"),
-        KnimeParameter("Colunms Included Names Array Size", RDF.List, "$$NUMERIC_COLUMNS$$", 'included_names',
-                       condition="$$INCLUDED$$", path="model/columns"), ### TO BE CHECKED
-        ### Creation of Parameters: KnimeParameter("Included Columns", XSD.string, "$$COLUMN_NAME$$", '$$COLUMN_ORDER$$', path="model/columns/included_names")
-        KnimeParameter("Colunms Excluded Names Array Size", RDF.List, "$$NUMERIC_COLUMNS$$", 'excluded_names',
-                       condition="$$EXCLUDED$$", path="model/columns"), ### TO BE CHECKED
-        ### Creation of Parameters: KnimeParameter("Included Columns", XSD.string, "$$COLUMN_NAME$$", '$$COLUMN_ORDER$$', path="model/columns/excluded_names")
+        KnimeParameter("Heatmap Included X Columns", RDF.List, "$$HEATMAP_NUMERICAL$$", 'included_names',
+                       condition="$$HEATMAP_INCLUDED$$", path="model/columns"), 
+        KnimeParameter("Heatmap Excluded X Columns", RDF.List, "$$HEATMAP_NUMERICAL$$", 'excluded_names',
+                       condition="$$HEATMAP_EXCLUDED$$", path="model/columns"), 
         KnimeParameter("Enforce option", XSD.string, "EnforceExclusion", 'enforce_option', path="model/columns"),
-        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', condition="$$ColumnName$$", path="model/columns/name_pattern"), ### Very Important
+        KnimeParameter("NP Pattern", XSD.string, "", 'pattern', path="model/columns/name_pattern"),
         KnimeParameter("NP Type", XSD.string, "Wildcard", 'type', path="model/columns/name_pattern"),
         KnimeParameter("NP Case Sensitive", XSD.boolean, True, 'caseSensitive', path="model/columns/name_pattern"),
         KnimeParameter("NP Exclude Matching", XSD.boolean, False, 'excludeMatching', path="model/columns/name_pattern"),
@@ -58,7 +56,7 @@ heatmap_visualizer_implementation = KnimeImplementation(
         KnimeParameter("Datatype Typelist Double Value", XSD.boolean, False, 'org.knime.core.data.DoubleValue', path="model/columns/datatype/typelist"),
         KnimeParameter("Datatype Typelist Long Value", XSD.boolean, False, 'org.knime.core.data.LongValue', path="model/columns/datatype/typelist"),
         KnimeParameter("Datatype Typelist Date and Time Value", XSD.boolean, False, 'org.knime.core.data.date.DateAndTimeValue', path="model/columns/datatype/typelist"),
-        KnimeParameter("Label Column", XSD.string, "$$CATEGORICAL$$", 'labelColumn', path="model"), ### Very Important
+        KnimeParameter("Heatmap Y Label Column", XSD.string, "$$HEATMAP_CATEGORICAL$$", 'labelColumn', path="model"),
         KnimeParameter("SVG Label Column", XSD.string, None, 'svgLabelColumn', path="model"),
         KnimeParameter("Subscribe Filter", XSD.boolean, True, 'subscribeFilter', path="model"),
         KnimeParameter("Enable Selection", XSD.boolean, True, 'enableSelection', path="model"),
@@ -96,19 +94,12 @@ heatmap_visualizer_implementation = KnimeImplementation(
 
 )
 
-heatmap_params = list(heatmap_visualizer_implementation.parameters.keys())
-
-exposed_params = [
-    'labelColumn', ### label column
-    # Creating displayed cols depending on the input, ### numeric column
-    'chartTitle', ### Title of the scatter plot
-]
-
 heatmap_visualizer_component = Component(
     name = "Heatmap Visualizer",
     implementation = heatmap_visualizer_implementation,
     exposed_parameters=[
-        param for param in heatmap_visualizer_implementation.parameters.keys() if param.knime_key in exposed_params
+        next((param for param in heatmap_visualizer_implementation.parameters.keys() if param.knime_key == 'labelColumn'), None), 
+        next((param for param in heatmap_visualizer_implementation.parameters.keys() if param.knime_key == 'included_names'), None)
     ],
     transformations = [
         CopyTransformation(1, 2),

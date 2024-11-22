@@ -81,6 +81,7 @@ def add_classes(ontology: Graph):
         tb.DataTag,
         tb.Parameter,
         tb.ParameterSpecification,
+        tb.ParameterValue,
         tb.Component,
         tb.LearnerComponent,
         tb.ApplierComponent,
@@ -131,8 +132,12 @@ def add_properties(ontology: Graph):
         (tb.defines, tb.User, tb.Intent),
         # Intent
         (tb.overData, tb.Intent, tb.Data),
+        (tb.specifies, tb.Intent, tb.Algorithm),
+        (tb.specifiesValue, tb.Intent, tb.ParameterValue),
         (tb.hasConstraint, tb.Intent, tb.Constraint),
         (tb.hasRequirement, tb.Intent, tb.Requirement),
+        # ParameterValue
+        (tb.forParameter, tb.ParameterValue, tb.Parameter),
         # Requirement
         (tb.hasEvaluationRequirement, tb.Requirement, tb.EvaluationRequirement),
         (tb.hasVisualizationRequirement, tb.Requirement, tb.VisualizationRequirement),

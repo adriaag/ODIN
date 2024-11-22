@@ -32,14 +32,14 @@ polynomial_svm_learner_component = Component(
     name='Polynomial SVM Learner',
     implementation=svm_learner_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(svm_learner_implementation.parameters.keys())[8], 'Polynomial'),
+        ParameterSpecification(next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_type'), None), 'Polynomial'),
     ],
     exposed_parameters=[
-        list(svm_learner_implementation.parameters.keys())[0],
-        list(svm_learner_implementation.parameters.keys())[1],
-        list(svm_learner_implementation.parameters.keys())[2],
-        list(svm_learner_implementation.parameters.keys())[3],
-        list(svm_learner_implementation.parameters.keys())[4],
+        next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'classcol'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'c_parameter'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_param_Bias'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_param_Power'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_param_Gamma'), None),
     ],
     transformations=[
         Transformation(
@@ -61,13 +61,13 @@ hypertangent_svm_learner_component = Component(
     name='HyperTangent SVM Learner',
     implementation=svm_learner_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(svm_learner_implementation.parameters.keys())[8], 'HyperTangent'),
+        ParameterSpecification(next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_type'), None), 'HyperTangent'),
     ],
     exposed_parameters=[
-        list(svm_learner_implementation.parameters.keys())[0],
-        list(svm_learner_implementation.parameters.keys())[1],
-        list(svm_learner_implementation.parameters.keys())[5],
-        list(svm_learner_implementation.parameters.keys())[6],
+        next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'classcol'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'c_parameter'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_param_kappa'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_param_delta'), None),
     ],
     transformations=[
         Transformation(
@@ -84,12 +84,12 @@ rbf_svm_learner_component = Component(
     name='RBF SVM Learner',
     implementation=svm_learner_implementation,
     overriden_parameters=[
-        ParameterSpecification(list(svm_learner_implementation.parameters.keys())[8], 'RBF'),
+        ParameterSpecification(next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_type'), None), 'RBF'),
     ],
     exposed_parameters=[
-        list(svm_learner_implementation.parameters.keys())[0],
-        list(svm_learner_implementation.parameters.keys())[1],
-        list(svm_learner_implementation.parameters.keys())[7],
+        next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'classcol'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'c_parameter'), None),
+        # next((param for param in svm_learner_implementation.parameters.keys() if param.knime_key == 'kernel_param_sigma'), None),
     ],
     transformations=[
         Transformation(
@@ -116,7 +116,7 @@ svm_predictor_implementation = KnimeImplementation(
         [cb.TestTabularDatasetShape, cb.NormalizedTabularDatasetShape, cb.NonNullTabularDatasetShape]
     ],
     output=[
-        cb.LabeledTabularDatasetShape,
+        cb.TabularDatasetShape,
     ],
     implementation_type=tb.ApplierImplementation,
     counterpart=svm_learner_implementation,
