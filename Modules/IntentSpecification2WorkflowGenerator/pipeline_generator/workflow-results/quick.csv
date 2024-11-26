@@ -3,7 +3,7 @@
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
-,,,,,,,,
+,,,,,Partition Comp.,Imputation Comp.,Scaling Comp.,Avg. Bal. Acc.
 ,,,,,first-absolute,drop,decimal,44.70%
 ,,,,,,,min-max,48.90%
 ,,,,,,,z-score,44.65%
@@ -44,7 +44,7 @@
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
-,,,,,,,,
+,,,,,Partition Comp.,Imputation Comp.,Scaling Comp.,Avg. Bal. Acc.
 ,,,,,random-absolute,drop,decimal,98.1%
 ,,,,,,,min-max,93.6%
 ,,,,,,,z-score,96%
@@ -67,7 +67,7 @@
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
-,,,,,,,,
+,,,,,Partition Comp.,Imputation Comp.,Scaling Comp.,Avg. Bal. Acc.
 ,,,,,first-absolute,mean,decimal,59.5%
 ,,,,,random-absolute,mean,decimal,60.20%
 ,,,,,,,z-score,57.35%

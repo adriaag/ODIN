@@ -6,7 +6,7 @@ svm_learner_implementation = KnimeImplementation(
     name='SVM Learner',
     algorithm=cb.SVM,
     parameters=[
-        KnimeParameter("Class column", XSD.string, "$$LABEL$$", 'classcol'),
+        KnimeParameter("Class column", XSD.string, "$$LABEL_CATEGORICAL$$", 'classcol'),
         KnimeParameter("Overlapping Penalty", XSD.double, 1.0, 'c_parameter'),
         KnimeParameter("Bias", XSD.double, 1.0, 'kernel_param_Bias'),
         KnimeParameter("Power", XSD.double, 1.0, 'kernel_param_Power'),

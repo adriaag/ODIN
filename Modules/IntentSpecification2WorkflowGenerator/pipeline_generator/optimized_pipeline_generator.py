@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Tuple, Any, List, Dict, Optional, Union, Set, Type
 import random
 import math
+import ast
 
 from pyshacl import validate
 from tqdm import tqdm
@@ -30,7 +31,7 @@ WHERE {{
     return result[0]['iri']
 
 
-def get_intent_dataset_task(intent_graph: Graph, intent_iri: URIRef) -> Tuple[URIRef, URIRef]:
+def get_intent_dataset_task(intent_graph: Graph, intent_iri: URIRef) -> Tuple[URIRef, URIRef, URIRef]:
     dataset_task_query = f"""
     PREFIX tb: <{tb}>
     SELECT ?dataset ?task ?algorithm
@@ -38,11 +39,23 @@ def get_intent_dataset_task(intent_graph: Graph, intent_iri: URIRef) -> Tuple[UR
         {intent_iri.n3()} a tb:Intent .
         {intent_iri.n3()} tb:overData ?dataset .
         ?task tb:tackles {intent_iri.n3()} .
-        OPTIONAL {{?algorithm tb:solves ?task}}
+        OPTIONAL {{{intent_iri.n3()} tb:specifies ?algorithm}}
     }}
 """
     result = intent_graph.query(dataset_task_query).bindings[0]
     return result['dataset'], result['task'], result.get('algorithm', None)
+
+
+def get_intent_parameters(intent_graph: Graph):
+    intent_parameters_query = f"""
+    PREFIX tb:<{tb}>
+    SELECT ?exp_param ?param_val
+    WHERE{{
+        ?param_val tb:forParameter ?exp_param .
+    }}
+"""
+    result = intent_graph.query(intent_parameters_query).bindings
+    return {param['exp_param']:param['param_val'] for param in result}
 
 
 def get_algorithms_from_task(ontology: Graph, task: URIRef) -> Tuple[URIRef, URIRef]:
@@ -64,6 +77,30 @@ def get_algorithms_from_task(ontology: Graph, task: URIRef) -> Tuple[URIRef, URI
     result = ontology.query(algorithm_task_query).bindings
     algos = [algo['algorithm'] for algo in result]
     return algos
+
+
+def get_exposed_parameters(ontology: Graph, task: URIRef, algorithm: URIRef):
+
+    expparams_query = f"""
+    PREFIX tb: <{tb}>
+    SELECT DISTINCT ?exp_param ?label ?value ?condition
+    WHERE {{
+        {task.n3()} a tb:Task .
+        {{
+            {"BIND(" + algorithm.n3() + " AS ?algorithm) ." if algorithm else f"?algorithm tb:solves {task.n3()} ."}
+        }}
+        # {'?algorithm' if algorithm is None else algorithm.n3()} tb:solves {task.n3()} .
+        ?imp tb:implements ?algorithm .
+        ?com tb:hasImplementation ?imp ;
+            tb:exposesParameter ?exp_param .
+        ?exp_param tb:has_defaultvalue ?value;
+                tb:has_condition ?condition ;
+                rdfs:label ?label .
+    }}
+    """
+    
+    result = ontology.query(expparams_query).bindings
+    return result 
 
 
 def get_intent_info(intent_graph: Graph, intent_iri: Optional[URIRef] = None) -> \
@@ -129,6 +166,7 @@ def flatten_shape(graph: Graph, shape: URIRef) -> List[URIRef]:
     else:
         return [shape]
 
+
 def get_all_implementations(ontology: Graph, task_iri: URIRef = None, algorithm: URIRef = None) -> \
         List[Tuple[URIRef, List[URIRef]]]:
     main_implementation_query = f"""
@@ -150,6 +188,7 @@ def get_all_implementations(ontology: Graph, task_iri: URIRef = None, algorithm:
         for implementation in implementations]
 
     return implementations_with_shapes
+
 
 def get_potential_implementations(ontology: Graph, task_iri: URIRef, algorithm: URIRef = None) -> \
         List[Tuple[URIRef, List[URIRef]]]:
@@ -177,6 +216,7 @@ def get_potential_implementations(ontology: Graph, task_iri: URIRef, algorithm: 
 
     return implementations_with_shapes
 
+
 def get_component_implementation(ontology: Graph, component: URIRef) -> URIRef:
     implementation_query = f"""
         PREFIX tb: <{tb}>
@@ -200,6 +240,7 @@ def get_implementation_components(ontology: Graph, implementation: URIRef) -> Li
     """
     results = ontology.query(components_query).bindings
     return [result['component'] for result in results]
+
 
 def find_components_to_satisfy_shape(ontology: Graph, shape: URIRef, exclude_appliers: bool = False) -> List[URIRef]:
     implementation_query = f"""
@@ -320,9 +361,7 @@ def identify_visual_io(ontology: Graph, ios: List[List[URIRef]], return_index: b
                 return i if return_index else io_shapes
 
 def satisfies_shape(data_graph: Graph, shacl_graph: Graph, shape: URIRef, focus: URIRef) -> bool:
-    # print(f'SHAPE: {shape.n3()}')
     conforms, g, report = validate(data_graph, shacl_graph=shacl_graph, validate_shapes=[shape], focus=focus)
-    # print(f'REPORT: {report}')
     return conforms
 
 def get_shape_target_class(ontology: Graph, shape: URIRef) -> URIRef:
@@ -352,26 +391,6 @@ def get_implementation_parameters(ontology: Graph, implementation: URIRef) -> Di
     return {param['parameter']: (param['value'], param['order'], param['condition']) for param in results}
 
 
-# def get_component_overriden_parameters(ontology: Graph, component: URIRef) -> Dict[
-#     URIRef, Tuple[Literal, Literal, Literal]]:
-#     parameters_query = f"""
-#         PREFIX tb: <{tb}>
-#         SELECT ?parameter ?parameterSpecification ?parameterValue ?position ?condition
-#         WHERE {{
-#             {component.n3()} tb:overridesParameter ?parameterSpecification .
-#             ?parameterSpecification tb:hasValue ?parameterValue .
-#             ?parameter tb:specifiedBy ?parameterSpecification ;
-#                        tb:has_position ?position ;
-#                        tb:has_condition ?condition .
-#         }}
-#         ORDER BY ?position
-#     """
-#     results = ontology.query(parameters_query).bindings
-#     # print(f"RESULTS: {results}")
-#     # for param in results:
-#     #     print(f"OVERRIDDEN PARAM: {component.n3()} ---> {param['parameter']}: {param['parameterValue']}")
-#     return {param['parameter']: (param['parameterValue'], param['position'], param['condition']) for param in results}
-
 def get_component_non_overriden_parameters(ontology: Graph, component: URIRef) -> Dict[
     URIRef, Tuple[Literal, Literal, Literal]]:
     parameters_query = f"""
@@ -390,38 +409,14 @@ def get_component_non_overriden_parameters(ontology: Graph, component: URIRef) -
         ORDER BY ?position
     """
     results = ontology.query(parameters_query).bindings
-    # print(f"COMP: {component.n3()} ---> RESULTS: {results}")
-    # for param in results:
-    #     print(f"NONOVERRIDN PARAM: {component.n3()} ---> {param['parameter']}: {param['parameterValue']}")
     return {param['parameter']: (param['parameterValue'], param['position'], param['condition']) for param in results}
 
 
+
 def get_component_parameters(ontology: Graph, component: URIRef) -> Dict[URIRef, Tuple[Literal, Literal, Literal]]:
-    # implementation = get_component_implementation(ontology, component)
-    # implementation_params = get_implementation_parameters(ontology, implementation)
-    # print(f"BIMPL PARAMS: {implementation_params}")
     component_params = get_component_non_overriden_parameters(ontology, component)
-    # print(f"CCOMP PARAMS: {component_params}")
-    # implementation_params.update(component_params)
-    # print(f"AIMPL PARAMS: {implementation_params}")
     return component_params
 
-def test_function(ontology: Graph, component: URIRef):
-    test_query = f"""
-
-        PREFIX tb:<{tb}>
-        SELECT ?component ?parameterSpec ?parameter ?parameterValue ?position
-        WHERE{{
-            BIND({component.n3()} AS ?component)
-            ?component tb:overridesParameter ?parameterSpec .
-            ?parameterSpec tb:hasValue ?parameterValue .
-            ?parameter tb:specifiedBy ?parameterSpec ;
-                       tb:has_position ?position .
-        }}
-    """
-    results = ontology.query(test_query).bindings
-    # print(f"TEST: {component.n3()} ---> {results}")
-    print(f"RESULTS: {results}")
 
 
 def get_component_overridden_paramspecs(ontology: Graph, workflow_graph: Graph, component: URIRef) -> Dict[URIRef, Tuple[URIRef, Literal]]:
@@ -437,12 +432,8 @@ def get_component_overridden_paramspecs(ontology: Graph, workflow_graph: Graph, 
         }}
     """
     results = ontology.query(paramspecs_query).bindings
-    # print(f"COMP: {component.n3()} ---> OVER: {results}")
 
     overridden_paramspecs = {paramspec['parameterSpec']: (paramspec['parameter'], paramspec['parameterValue'], paramspec['position']) for paramspec in results}
-    
-    # for paramspec in overridden_paramspecs.items():
-    #     print(f"OVERRIDN PARAM: {component.n3()} ---> {paramspec[0]}: {paramspec[1][0]}, {paramspec[1][1]}")
 
     for paramspec, paramval_tup in overridden_paramspecs.items():
         param, value, _ = paramval_tup
@@ -453,11 +444,25 @@ def get_component_overridden_paramspecs(ontology: Graph, workflow_graph: Graph, 
     return overridden_paramspecs
 
 
+
 def perform_param_substitution(graph: Graph, implementation: URIRef, parameters: Dict[URIRef, Tuple[Literal, Literal, Literal]],
-                               inputs: List[URIRef], vis_necessities: Dict[str, List[str]] = None) -> Dict[URIRef, Tuple[Literal, Literal, Literal]]:
+                               inputs: List[URIRef], intent_graph: Graph = None, vis_necessities: Dict[str, List[str]] = None) -> Dict[URIRef, Tuple[Literal, Literal, Literal]]:
     
-    keys = list(parameters.keys())
-    for param in keys:
+    parameter_keys = list(parameters.keys())
+    intent_parameters = get_intent_parameters(intent_graph) if intent_graph is not None else {}
+    intent_parameter_keys = list(intent_parameters.keys())
+
+    updated_parameters = parameters.copy()
+
+    for parameter, (default_value, position, condition) in parameters.items():
+        for parameter in intent_parameter_keys:
+            intent_value = intent_parameters[parameter]
+            updated_parameters[parameter] = (intent_value, position, condition)
+
+    parameters.update(updated_parameters)
+            
+
+    for param in parameter_keys:
         value, order, condition = parameters[param]
         if condition.value is not None and condition.value != '':
             feature_types = get_inputs_feature_types(graph, inputs)
@@ -470,9 +475,9 @@ def perform_param_substitution(graph: Graph, implementation: URIRef, parameters:
             if condition.value == '$$FLOAT_COLUMN$$' and float not in feature_types:
                 parameters.pop(param)
                 continue
-        if isinstance(value.value, str) and '$$LABEL$$' in value.value:
-            new_value = value.replace('$$LABEL$$', f'{get_inputs_label_name(graph, inputs)}')
-            parameters[param] = (Literal(new_value), order, condition)
+        # if isinstance(value.value, str) and '$$LABEL$$' in value.value:
+        #     new_value = value.replace('$$LABEL$$', f'{get_inputs_label_name(graph, inputs)}')
+        #     parameters[param] = (Literal(new_value), order, condition)
         if isinstance(value.value, str) and '$$NUMERIC_COLUMNS$$' in value.value:
             new_value = value.replace('$$NUMERIC_COLUMNS$$', f'{get_inputs_numeric_columns(graph, inputs)}')
             parameters[param] = (Literal(new_value), order, condition)
@@ -482,72 +487,31 @@ def perform_param_substitution(graph: Graph, implementation: URIRef, parameters:
         if isinstance(value.value, str) and '&amp;' in value.value:
             new_value = value.replace('&amp;', '&')
             parameters[param] = (Literal(new_value), order, condition)
-        if isinstance(value.value, str) and '$$PIE_CATEGORICAL$$' in value.value:
-            new_value = value.replace('$$PIE_CATEGORICAL$$', vis_necessities['pie_cat'][0])
-            parameters[param] = (Literal(new_value), order, condition)
-        if isinstance(value.value, str) and '$$PIE_FREQUENCY$$' in value.value:
-            new_value = value.replace('$$PIE_FREQUENCY$$', vis_necessities['pie_freq'][0] if vis_necessities['pie_freq'] != [] else '')
-            parameters[param] = (Literal(new_value), order, condition)
-        if isinstance(value.value, str) and '$$BAR_CATEGORICAL$$' in value.value:
-            new_value = value.replace('$$BAR_CATEGORICAL$$', vis_necessities['bar_cat'][0])
-            parameters[param] = (Literal(new_value), order, condition)
-        if isinstance(value.value, str) and '$$BAR_FREQUENCY$$' in value.value:
-            possible_cols = get_inputs_numeric_columns(graph, inputs)
-            if condition.value == '$$BAR_INCLUDED$$':
-                assert set(vis_necessities['bar_freq']).issubset(possible_cols)
-                # new_value = value.replace('$$BAR_FREQUENCY$$', vis_necessities['bar_freq'])
-                parameters[param] = (Literal(vis_necessities['bar_freq']), order, condition)
-            elif condition.value == '$$BAR_EXCLUDED$$':
-                excluded_cols = list(set(possible_cols) - set(vis_necessities['bar_freq']))
+        if isinstance(value.value, str) and value.value != '':
+            if condition.value == '$$BAR_EXCLUDED$$':
+                possible_cols = get_inputs_numeric_columns(graph, inputs)
+                included_cols = [ast.literal_eval(str(parameters[param][0])) for param in intent_parameters.keys() if 'included' in str(param)][0]
+                excluded_cols = list(set(possible_cols) - set(included_cols))
                 parameters[param] = (Literal(excluded_cols), order, condition)
-        if isinstance(value.value, str) and '$$HISTOGRAM_NUMERICAL$$' in value.value:
-            new_value = value.replace('$$HISTOGRAM_NUMERICAL$$', vis_necessities['hist_num'][0])
-            parameters[param] = (Literal(new_value), order, condition)
-        if isinstance(value.value, str) and '$$HISTOGRAM_FREQUENCY$$' in value.value:
-            possible_cols = get_inputs_numeric_columns(graph, inputs)
-            if condition.value == '$$HISTOGRAM_INCLUDED$$':
-                assert set(vis_necessities['hist_freq']).issubset(possible_cols)
-                # new_value = value.replace('$$HISTOGRAM_FREQUENCY', vis_necessities['hist_freq'])
-                parameters[param] = (Literal(vis_necessities['hist_freq']), order, condition)
             elif condition.value == '$$HISTOGRAM_EXCLUDED$$':
-                excluded_cols = list(set(possible_cols) - set(vis_necessities['hist_freq'] + vis_necessities['hist_num']))
+                possible_cols = get_inputs_numeric_columns(graph, inputs)
+                cat_col = [str(parameters[param][0]) for param in intent_parameters.keys() if 'histogram_category' in str(param)][0]
+                included_cols = [ast.literal_eval(str(parameters[param][0])) for param in intent_parameters.keys() if 'included' in str(param)][0]
+                excluded_cols = list(set(possible_cols) - set(cat_col) - set(included_cols))
                 parameters[param] = (Literal(excluded_cols), order, condition)
-        if isinstance(value.value, str) and '$$SCATTERPLOT_COLUMN$$' in value.value:
-            all_cols = get_inputs_all_columns(graph, inputs)
-            assert set(vis_necessities['scat_cols']).issubset(all_cols)
-            if condition.value == '$$SCATTERPLOT_X$$':
-                new_value = value.replace('$$SCATTERPLOT_COLUMN$$', vis_necessities['scat_cols'][0])
-                parameters[param] = (Literal(new_value), order, condition)
-            elif condition.value == '$$SCATTERPLOT_Y$$':
-                new_value = value.replace('$$SCATTERPLOT_COLUMN$$', vis_necessities['scat_cols'][1])
-                parameters[param] = (Literal(new_value), order, condition)
-        if isinstance(value.value, str) and '$$LINEPLOT_COLUMN$$' in value.value:
-            all_cols = get_inputs_all_columns(graph, inputs)
-            complete_cols = all_cols + ["<RowID>"]
-            if condition.value == '$$LINEPLOT_X$$':
-                assert vis_necessities['line_xcol'][0] in complete_cols
-                new_value = value.replace('$$LINEPLOT_COLUMN$$', vis_necessities['line_xcol'][0])
-                parameters[param] = (Literal(new_value), order, condition)
-            elif condition.value == '$$LINEPLOT_INCLUDED$$':
-                assert set(vis_necessities['line_ycols']).issubset(complete_cols)
-                # new_value = value.replace('$$LINEPLOT_COLUMN$$', vis_necessities['line_ycols'])
-                parameters[param] = (Literal(vis_necessities['line_ycols']), order, condition)
-            elif condition.value == '$$LINEPLOT_EXCLUDED$$':
-                excluded_cols = list(set(all_cols) - set(vis_necessities['line_ycols']))
-                parameters[param] = (Literal(excluded_cols), order, condition)
-        if isinstance(value.value, str) and '$$HEATMAP_CATEGORICAL$$' in value.value:
-            cat_complete_cols = get_inputs_categorical_columns(graph, inputs) + ["<RowID>"]
-            assert set(vis_necessities['heatmap_ycol']).issubset(cat_complete_cols) 
-            new_value = value.replace('$$HEATMAP_CATEGORICAL$$', vis_necessities['heatmap_ycol'][0])
-            parameters[param] = (Literal(new_value), order, condition)
-        if isinstance(value.value, str) and '$$HEATMAP_NUMERICAL$$' in value.value:
-            num_cols = get_inputs_numeric_columns(graph, inputs)
-            if condition.value == '$$HEATMAP_INCLUDED$$':
-                assert set(vis_necessities['heatmap_xcols']).issubset(num_cols)
-                # new_value = value.replace('$$HEATMAP_NUMERICAL$$', vis_necessities['heatmap_xcols'])
-                parameters[param] = (Literal(vis_necessities['heatmap_xcols']), order, condition)
             elif condition.value == '$$HEATMAP_EXCLUDED$$':
-                excluded_cols = list(set(num_cols) - set(vis_necessities['heatmap_xcols']))
+                possible_cols = get_inputs_numeric_columns(graph, inputs)
+                included_cols = [ast.literal_eval(str(parameters[param][0])) for param in intent_parameters.keys() if 'included' in str(param)][0]
+                excluded_cols = list(set(possible_cols) - set(included_cols))
+                parameters[param] = (Literal(excluded_cols), order, condition)
+            elif condition.value == '$$LINEPLOT_EXCLUDED$$':
+                possible_cols = get_inputs_all_columns(graph, inputs) + ['<RowID>']
+                com_col = [str(parameters[param][0]) for param in intent_parameters.keys() if 'lineplot_x' in str(param)]
+                print(f'POSSIBLE: {possible_cols}')
+                included_cols = [ast.literal_eval(str(parameters[param][0])) for param in intent_parameters.keys() if 'included' in str(param)][0]
+                print(f'INCLUDED: {included_cols}')
+                excluded_cols = list(set(possible_cols) - set(com_col) - set(included_cols))
+                print(f'EXCLUDED: {excluded_cols}')
                 parameters[param] = (Literal(excluded_cols), order, condition)
 
     return parameters
@@ -642,7 +606,7 @@ def get_inputs_all_columns(graph: Graph, inputs: List[URIRef]) -> List:
 
 def get_inputs_label_name(graph: Graph, inputs: List[URIRef]) -> str:
     
-    data_input = next(i for i in inputs if (i, RDF.type, dmop.TabularDataset) in graph) #inputs[0]
+    data_input = next(i for i in inputs if (i, RDF.type, dmop.TabularDataset) in graph)
 
     label_query = f"""
         PREFIX rdfs: <{RDFS}>
@@ -665,7 +629,7 @@ def get_inputs_label_name(graph: Graph, inputs: List[URIRef]) -> str:
 
 def get_exact_column(graph: Graph, inputs: List[URIRef], column_name: str) -> str:
     
-    data_input = next(i for i in inputs if (i, RDF.type, dmop.TabularDataset) in graph) #inputs[0]
+    data_input = next(i for i in inputs if (i, RDF.type, dmop.TabularDataset) in graph)
 
     column_query = f"""
         PREFIX rdfs: <{RDFS}>
@@ -833,7 +797,6 @@ PREFIX dmop: <{dmop}>
                 query = query.replace(f'$input{i + 1}', f'{inputs[i].n3()}')
             for i in range(len(outputs)):
                 query = query.replace(f'$output{i + 1}', f'{outputs[i].n3()}')
-            # print(f"PARAM SPECS: {parameters_specs}")
             for param_spec, (param, value, order) in parameters_specs.items():
                 query = query.replace(f'$param{order + 1}', f'{value.n3()}')
                 query = query.replace(f'$parameter{order + 1}', f'{value.n3()}')
@@ -865,7 +828,6 @@ def get_best_components(graph: Graph, task: URIRef, components: List[URIRef], da
     for component in components:
         
         component_rules = retreive_component_rules(graph, task, component)
-        # print(f'RULES: {component_rules}')
         score = 0
 
         preferred_components[component] = score
@@ -880,9 +842,7 @@ def get_best_components(graph: Graph, task: URIRef, components: List[URIRef], da
                 
             preferred_components[component] = (score, component_rank)
         
-    # print(f'BEFORE SORTING: {preferred_components}')
     sorted_preferred = sorted(preferred_components.items(), key=lambda x: x[1][0], reverse=True)
-    # print(f'AFTERI SORTING: {sorted_preferred}')
 
     if len(sorted_preferred) > 0: ### there are multiple components to choose from
         best_scores = set([comp[1] for comp in sorted_preferred])
@@ -891,13 +851,10 @@ def get_best_components(graph: Graph, task: URIRef, components: List[URIRef], da
             sorted_preferred = random.sample(sorted_preferred, int(math.ceil(len(sorted_preferred)*percentage))) if percentage else sorted_preferred
         elif len(best_scores) > 1: ### checking if there is at least one superior component
             sorted_preferred = [x for x in sorted_preferred if x[1] >= sorted_preferred[0][1]]
-        # else:
-        #     sorted_preferred = random.sample(sorted_preferred, int(math.ceil(len(sorted_preferred)*percentage)))
-    # print(f'AFTERI SORTING: {sorted_preferred}')
+
 
     for comp, rules_nbr in sorted_preferred:
         sorted_components[comp] = rules_nbr 
-    # print(f'AFTER SORTING: {sorted_components}')
 
     return sorted_components
 
@@ -910,13 +867,10 @@ def get_step_name(workflow_name: str, task_order: int, implementation: URIRef) -
 
 def add_loader_step(ontology: Graph, workflow_graph: Graph, workflow: URIRef, dataset_node: URIRef) -> URIRef:
     loader_component = cb.term('component-csv_local_reader')
-    # loader_implementation = get_component_implementation(loader_component)
     loader_step_name = get_step_name(workflow.fragment, 0, loader_component)
     loader_parameters = get_component_parameters(ontology, loader_component)
     loader_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, loader_component)
-    # loader_overridden_parameters = get_component_overriden_parameters(ontology, loader_component)
     loader_parameters = perform_param_substitution(workflow_graph, None, loader_parameters, [dataset_node])
-    # loader_parameters.update(loader_overridden_parameters)
     loader_param_specs = assign_to_parameter_specs(workflow_graph, loader_parameters)
     loader_param_specs.update(loader_overridden_paramspecs)
     return add_step(workflow_graph, workflow, loader_step_name, loader_component, loader_param_specs, 0, None, None,
@@ -924,7 +878,7 @@ def add_loader_step(ontology: Graph, workflow_graph: Graph, workflow: URIRef, da
 
 
 def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef, main_component: URIRef,
-                           transformations: List[URIRef], vis_necessities: Dict[str, List[str]] = None) -> Tuple[Graph, URIRef]:
+                           transformations: List[URIRef], intent_graph:Graph, vis_necessities: Dict[str, List[str]] = None) -> Tuple[Graph, URIRef]:
     workflow_graph = get_graph_xp()
     workflow = ab.term(workflow_name)
     workflow_graph.add((workflow, RDF.type, tb.Workflow))
@@ -948,7 +902,7 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
 
     for train_component in [*transformations, main_component]:
     
-        test_component = next(ontology.objects(train_component, tb.hasApplier, True), None)#, train_component)
+        test_component = next(ontology.objects(train_component, tb.hasApplier, True), None)
         same = train_component == test_component
         train_component_implementation = get_component_implementation(ontology, train_component)
 
@@ -956,7 +910,6 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
         if not test_component:
             
             singular_component = train_component
-            # test_function(ontology, singular_component)
             singular_step_name = get_step_name(workflow_name, task_order, singular_component)
             singular_component_implementation = get_component_implementation(ontology, singular_component)
             singular_input_specs = get_implementation_input_specs(ontology, singular_component_implementation)
@@ -974,30 +927,22 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             
             singular_parameters = get_component_parameters(ontology, singular_component)
             singular_overridden_parameters = get_component_overridden_paramspecs(ontology, workflow_graph, singular_component)
-            # singular_overridden_parameters = get_component_overriden_parameters(ontology, singular_component)
             singular_parameters = perform_param_substitution(graph=workflow_graph, parameters=singular_parameters,
                                                                 implementation=singular_component_implementation,
                                                                 inputs=singular_transformation_inputs,
+                                                                intent_graph=intent_graph,
                                                                 vis_necessities=vis_necessities)
-            # singular_parameters.update(singular_overridden_parameters)
-            # print(f'SINGLE: {singular_component}: {singular_parameters}')
             singular_param_specs = assign_to_parameter_specs(workflow_graph, singular_parameters)
-            # print(f"NEW PARAM SPECS: {singular_param_specs}")
-            # print(f"OVR PARAM SPECS: {singular_overridden_parameters}")
             singular_param_specs.update(singular_overridden_parameters)
-            # print(f"PARAM SPECS: {singular_param_specs}")
-            # singular_params_merged = join_dicts(singular_parameters, singular_param_specs)
             singular_step = add_step(workflow_graph, workflow,
                                 singular_step_name,
                                 singular_component,
-                                # singular_params_merged,
                                 singular_param_specs,
                                 task_order, previous_step,
                                 [previous_node],
                                 singular_transformation_outputs)
             run_component_transformation(ontology, workflow_graph, singular_component,
                                             [previous_node], singular_transformation_outputs, singular_param_specs)
-                                            #singular_params_merged)
 
 
             train_dataset_index = identify_data_io(ontology, singular_output_specs, train=True, return_index=True)
@@ -1019,8 +964,6 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
 
             train_step_name = get_step_name(workflow_name, task_order, train_component)
 
-            # test_function(ontology, train_component)
-
             train_component_implementation = get_component_implementation(ontology, train_component)
 
             train_input_specs = get_implementation_input_specs(ontology, train_component_implementation)
@@ -1040,21 +983,15 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             train_parameters = get_component_parameters(ontology, train_component)
             train_parameters = perform_param_substitution(graph=workflow_graph, implementation=train_component_implementation,
                                                             parameters=train_parameters,
+                                                            intent_graph=intent_graph,
                                                             inputs=train_transformation_inputs)
-            # train_overridden_parameters = get_component_overriden_parameters(ontology, train_component)
             train_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, train_component)
-            # train_parameters.update(train_overridden_parameters)
-            # print(f'TRAIN: {train_component}: {train_parameters}')
             train_param_specs = assign_to_parameter_specs(workflow_graph, train_parameters)
-            # print(f"NEW PARAM SPECS: {train_param_specs}")
-            # print(f"OVR PARAM SPECS: {train_overridden_parameters}")
             train_param_specs.update(train_overridden_paramspecs)
-            # train_params_merged = join_dicts(train_parameters, train_param_specs)
             train_step = add_step(workflow_graph, workflow,
                                 train_step_name,
                                 train_component,
                                 train_param_specs,
-                                # train_params_merged,
                                 task_order, previous_train_step,
                                 train_transformation_inputs,
                                 train_transformation_outputs)
@@ -1063,7 +1000,6 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
 
             run_component_transformation(ontology, workflow_graph, train_component, train_transformation_inputs,
                                         train_transformation_outputs, train_param_specs)
-                                        # train_params_merged)
 
             if train_output_data_index is not None:
                 train_dataset_node = train_transformation_outputs[train_output_data_index]
@@ -1077,8 +1013,6 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
 
                 test_step_name = get_step_name(workflow_name, task_order, test_component)
 
-                # test_function(ontology, test_component)
-
                 test_input_specs = get_implementation_input_specs(ontology,
                                                                 get_component_implementation(ontology, test_component))
                 test_input_data_index = identify_data_io(ontology, test_input_specs, test=True, return_index=True)
@@ -1091,11 +1025,8 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
                                         test_input_specs)
                 
                 test_implementation = get_component_implementation(ontology, test_component)
-                print(f'TEST IMPL: {test_implementation}')
                 test_output_specs = get_implementation_output_specs(ontology, test_implementation)
-                print(f'TEST OUT SPECS: {test_output_specs}')
                 test_output_data_index = identify_data_io(ontology, test_output_specs, return_index=True)
-                print(f'TEST OUT INDEX: {test_output_data_index}')
                 test_transformation_outputs = [ab[f'{test_step_name}-output_{i}'] for i in range(len(test_output_specs))]
                 annotate_ios_with_specs(ontology, workflow_graph, test_transformation_outputs,
                                         test_output_specs)
@@ -1103,30 +1034,25 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
                 previous_test_steps = [previous_test_step, train_step] if not same else [previous_test_step]
                 test_parameters = get_component_parameters(ontology, test_component)
                 test_component_implementation = get_component_implementation(ontology, test_component) if test_component else None
-                test_parameters = perform_param_substitution(workflow_graph, test_component_implementation, test_parameters, test_transformation_inputs)
-                # test_overridden_parameters = get_component_overriden_parameters(ontology, test_component)
-                # test_parameters.update(test_overridden_parameters)
-                # print(f'TEST: {test_component}: {test_parameters}')
+                test_parameters = perform_param_substitution(workflow_graph,
+                                                             test_component_implementation,
+                                                             test_parameters,
+                                                             test_transformation_inputs,
+                                                             intent_graph=intent_graph)
                 test_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, train_component)
                 test_param_specs = assign_to_parameter_specs(workflow_graph, test_parameters)
-                # print(f"NEW PARAM SPECS: {test_param_specs}")
-                # print(f"OVR PARAM SPECS: {test_overridden_parameters}")
                 test_param_specs.update(test_overridden_paramspecs)
-                # test_params_merged = join_dicts(test_parameters, test_param_specs)
                 test_step = add_step(workflow_graph, workflow,
                                     test_step_name,
                                     test_component,
                                     test_param_specs,
-                                    # test_params_merged,
                                     task_order, previous_test_steps,
                                     test_transformation_inputs,
                                     test_transformation_outputs)
 
                 run_component_transformation(ontology, workflow_graph, test_component, test_transformation_inputs,
                                             test_transformation_outputs, test_param_specs)
-                                            # test_params_merged)
                 
-                print(f'TEST OUTPUT{test_output_data_index}: {test_transformation_outputs}')
                 test_dataset_node = test_transformation_outputs[test_output_data_index]
                 previous_test_step = test_step
                 task_order += 1
@@ -1138,138 +1064,69 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
         saver_parameters = get_component_parameters(ontology, saver_component)
         saver_implementation = get_component_implementation(ontology, saver_component)
         saver_parameters = perform_param_substitution(workflow_graph, saver_implementation, saver_parameters, [test_dataset_node])
-        # saver_overridden_parameters = get_component_overriden_parameters(ontology, saver_component)
         saver_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, saver_component)
-        # saver_parameters.update(saver_overridden_parameters)
-        print(f'SAVE: {saver_component}: {saver_parameters}')
         saver_param_specs = assign_to_parameter_specs(workflow_graph, saver_parameters)
         saver_param_specs.update(saver_overridden_paramspecs)
-        # saver_params_merged = join_dicts(saver_parameters, saver_param_specs)
         add_step(workflow_graph,
                 workflow,
                 saver_step_name,
                 saver_component,
                 saver_param_specs,
-                # saver_params_merged, 
                 task_order,
                 previous_test_step, [test_dataset_node], [])
 
     return workflow_graph, workflow
 
 
-def get_exposed_parameters(ontology: Graph, algorithm: URIRef):
-    expparams_query = f"""
-        PREFIX tb: <{tb}>
-        SELECT DISTINCT ?exp_param
-        WHERE {{
-            {algorithm.n3()} a tb:Algorithm .
-            ?imp tb:implements {algorithm.n3()} .
-            ?com tb:hasImplementation ?imp ;
-                tb:exposesParameter ?exp_param .
-        }}
-"""
-    result = ontology.query(expparams_query).bindings
-    return result
 
 def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: str, log: bool = False) -> None:
     
     dataset, task, algorithm, intent_iri = get_intent_info(intent_graph)
-    # algorithm = get_algorithms_from_task(ontology, task) if algorithm is None else [algorithm]
 
     if log:
         tqdm.write(f'Intent: {intent_iri.fragment}')
         tqdm.write(f'Dataset: {dataset.fragment}')
         tqdm.write(f'Task: {task.fragment}')
         tqdm.write(f'Algorithm: {algorithm.fragment if algorithm is not None else [algo.fragment for algo in get_algorithms_from_task(ontology, task)]}')
-        # tqdm.write(f'Intent params: {intent_params}')
         tqdm.write('-------------------------------------------------')
 
-    # exposed_params = [get_exposed_parameters(ontology, alg) for alg in algorithm]
-    # print(f'EXPOSED PARAMS: {exposed_params}')
+    all_cols = get_inputs_all_columns(ontology, [dataset])
+    cat_cols = get_inputs_categorical_columns(ontology, [dataset])
+    num_cols = get_inputs_numeric_columns(ontology, [dataset])
+    
+    exp_params = get_exposed_parameters(ontology, task, algorithm)
 
-    vis_necessities = {}
-    if task.fragment == 'DataVisualization':
-        vis_necessities = {
-            'pie_cat':[],
-            'pie_freq':[],
-            'bar_cat':[],
-            'bar_freq':[],
-            'hist_num':[],
-            'hist_freq':[],
-            'scat_cols':[],
-            'line_xcol':[],
-            'line_ycols':[],
-            'heatmap_ycol':[],
-            'heatmap_xcols':[]
-        }
-        all_cols = get_inputs_all_columns(ontology, [dataset])
-        complete_cols = all_cols + ["<RowID>"]
-        cat_cols = get_inputs_categorical_columns(ontology, [dataset])
-        num_cols = get_inputs_numeric_columns(ontology, [dataset])
-        if algorithm[0].fragment == 'PieChart':
-            vis_necessities['pie_cat'] = [input(f"Enter the column from the following {cat_cols}:") or cat_cols[0]]
+    for exp_param in exp_params:
+        option_columns = []
+        if 'CATEGORICAL' in exp_param['value']:
+            option_columns = cat_cols
+        elif 'NUMERICAL' in exp_param['value']:
+            option_columns = num_cols
+        else:
+            option_columns = all_cols
 
-            vis_necessities['pie_freq'].append(input(f"Enter one of the following columns {num_cols}:" or num_cols[0]))
+        if 'COMPLETE' in exp_param['value']:
+            option_columns.append('<RowID>')
 
-        elif algorithm[0].fragment == 'BarChart':
-            vis_necessities['bar_cat'] = [input(f"Enter the column from the following {cat_cols}:") or cat_cols[0]]
-            
-            freq_option = [(input("Are there frequency columns you want to include [Yes or No]:") or 'No').lower()]
+        if 'INCLUDED' in exp_param['condition']:
+            param_val = []
+            col_num = int(input(f"How many columns do you want to enter for {exp_param['label']} parameter?"))
+            for i in range(col_num):
+                param_val.append(input(f"Enter a value for {exp_param['label']} from the following: {option_columns}"))
+        else:
+            param_val = input(f"Enter a value for {exp_param['label']} from the following: {option_columns}")
 
-            if freq_option != 'no':
-
-                freq_num = int(input("How many frequency columns you want to include:"))
-
-                for i in range(freq_num):
-                    vis_necessities['bar_freq'].append(input(f"Enter one of the following columns {num_cols}:" or num_cols[0]))
-        
-        elif algorithm[0].fragment == 'Histogram':
-            vis_necessities['hist_num'] = [input(f"Enter the column from the following {num_cols}:") or num_cols[0]]
-            
-            freq_option = [(input("Are there frequency columns you want to include [Yes or No]:") or 'No').lower()]
-
-            if freq_option != 'no':
-
-                freq_num = int(input("How many frequency columns you want to include:"))
-
-                for i in range(freq_num):
-                    vis_necessities['hist_freq'].append(input(f"Enter one of the following columns {num_cols}:") or num_cols[0])
-
-        elif algorithm[0].fragment == 'ScatterPlot':
-
-            vis_necessities['scat_cols'].append(input(f"Enter the column on the x-axis {all_cols}:") or all_cols[0])
-            vis_necessities['scat_cols'].append(input(f"Enter the column on the y-axis {all_cols}:") or all_cols[0])
-
-        elif algorithm[0].fragment == 'LinePlot':
-
-            vis_necessities['line_xcol'].append(input(f"Enter the x-axis column {complete_cols}") or complete_cols[-1])
-            y_num = int(input("Enter the number of y-axis columns:")) or 0
-
-            # vis_necessities['freq_cols'] = []
-            for i in range(y_num):
-                vis_necessities['line_ycols'].append(input(f"Enter the y-axis column {all_cols}") or all_cols[0])
-
-        elif algorithm[0].fragment == 'HeatMap':
-
-            vis_necessities['heatmap_ycol'].append(input(f'Enter the y-axis column {cat_cols + ["<RowID>"]}') or cat_cols[-1])
-            x_num = int(input("Enter the number of x-axis columns:")) or 0
-
-            # vis_necessities['x_cols'] = []
-            for i in range(x_num):
-                vis_necessities['heatmap_xcols'].append(input(f"Enter the x-axis column {num_cols}") or num_cols[0])
+        intent_graph.add((intent_iri, tb.specifiesValue, Literal(param_val)))
+        intent_graph.add((Literal(param_val), tb.forParameter, exp_param['exp_param']))
 
 
     impls = get_potential_implementations(ontology, task, algorithm)
-    print(f'IMPLS: {impls}')
     components = [
         (c, impl, inputs)
         for impl, inputs in impls
         for c in get_implementation_components(ontology, impl)
     ]
 
-    # for i, (com, imp, inp) in enumerate(components):
-    #     print(f'{i}: {com}, {imp}, {inp}')
-    # print('-----------------------------------------------------')
 
     if log:
         for component, implementation, inputs in components:
@@ -1298,10 +1155,8 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
         print(f'AVAILABLE TRANSFORMATIONS: {available_transformations}')
 
         for tr, methods in available_transformations.items():
-            # print(f'Possible Components for {tr} --> {methods}')
-            best_components = get_best_components(ontology, task, methods, dataset)
 
-            # print(f'PREFERRED COMPONENTS: {best_components}')
+            best_components = get_best_components(ontology, task, methods, dataset)
 
             available_transformations[tr] = list(best_components.keys())
 
@@ -1331,7 +1186,7 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
             workflow_name = f'workflow_{workflow_order}_{intent_iri.fragment}_{uuid.uuid4()}'.replace('-', '_')
 
             wg, w = build_general_workflow(workflow_name, ontology, dataset, component,
-                                           transformation_combination, vis_necessities=vis_necessities)
+                                           transformation_combination, intent_graph = intent_graph)
 
             wg.add((w, tb.generatedFor, intent_iri))
             wg.add((intent_iri, RDF.type, tb.Intent))
@@ -1343,30 +1198,23 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
 
 def interactive():
     intent_graph = get_graph_xp()
-    intent = input('Introduce the intent name [ClassificationIntent]: ') or 'ClassificationIntent' #or 'VisualizationIntent'
-    data = input('Introduce the data name [titanic.csv]: ') or 'titanic.csv'
-    task = input('Introduce the problem name [Classification]: ') or 'Classification' #or 'DataVisualization'
+    intent = input('Introduce the intent name [ClassificationIntent]: ') or 'VisualizationIntent' #or 'ClassificationIntent'
+    data = input('Introduce the dataset name [titanic.csv]: ') or 'titanic.csv'
+    task = input('Introduce the problem name [Classification]: ') or  'DataVisualization' #or 'Classification'
 
-    
-
-    vis_algorithms = {"piechart": cb.PieChart,
-                      "barchart": cb.BarChart,
-                      "scatterplot": cb.ScatterPlot,
-                      "histogram": cb.Histogram,
-                      "lineplot": cb.LinePlot,
-                      "heatmap": cb.HeatMap}
 
     intent_graph.add((ab.term(intent), RDF.type, tb.Intent))
     intent_graph.add((ab.term(intent), tb.overData, ab.term(data)))
     intent_graph.add((cb.term(task), tb.tackles, ab.term(intent)))
 
-    if task == 'DataVisualization':
-        vis_algorithm = vis_algorithms[str(input('Choose the Visualization Method:\n-Pie Chart\n-Bar Chart\n-Histogram\n-Scatter Plot\n-Line Plot\n-Heatmap') or 'BarChart').replace(" ","").lower()]
-        if vis_algorithm is not None:
-            intent_graph.add((vis_algorithm, tb.solves, cb.term(task)))
-
 
     ontology = get_ontology_graph()
+
+    if task == 'DataVisualization':
+        algos = [alg.fragment for alg in get_algorithms_from_task(ontology, cb.term(task))]
+        vis_algorithm = str(input(f'Choose a visualization algorithm from the following (case-sensitive):{algos}'))
+        if vis_algorithm is not None:
+            intent_graph.add((ab.term(intent), tb.specifies, cb.term(vis_algorithm)))
 
     folder = input('Introduce the folder to save the workflows: ')
     if folder == '':

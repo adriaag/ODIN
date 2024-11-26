@@ -6,7 +6,7 @@ decision_tree_learner_implementation = KnimeImplementation(
     name='Decision Tree Learner',
     algorithm=cb.DecisionTree,
     parameters=[
-        KnimeParameter("Class column", XSD.string, '$$LABEL$$', 'classifyColumn'),
+        KnimeParameter("Class column", XSD.string, '$$LABEL_CATEGORICAL$$', 'classifyColumn'),
         KnimeParameter("Number of records to store for view", XSD.int, 10000, 'numverRecordsToView'),
         KnimeParameter("Min number records per node", XSD.int, 10, 'minNumberRecordsPerNode'),
         KnimeParameter("Pruning method", XSD.string, "No pruning", 'pruningMethod'),
