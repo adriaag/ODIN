@@ -118,13 +118,6 @@ def add_classes(ontology: Graph):
     ontology.add((tb.VisualizerComponent, OWL.disjointWith, tb.ApplierComponent))
     ontology.add((tb.VisualizerComponent, OWL.disjointWith, tb.LearnerComponent))
 
-    # ontology.add((tb.Dataset, RDFS.subClassOf, tb.Data))
-    # ontology.add((tb.Model, RDFS.subClassOf, tb.Data))
-    # ontology.add((tb.Visualization, RDFS.subClassOf, tb.Data))
-    # ontology.add((tb.Dataset, OWL.disjointWith, tb.Model))
-    # ontology.add((tb.Dataset, OWL.disjointWith, tb.Visualization))
-    # ontology.add((tb.Model, OWL.disjointWith, tb.Visualization))
-
 
 def add_properties(ontology: Graph):
     properties = [
@@ -136,6 +129,7 @@ def add_properties(ontology: Graph):
         (tb.specifiesValue, tb.Intent, tb.ParameterValue),
         (tb.hasConstraint, tb.Intent, tb.Constraint),
         (tb.hasRequirement, tb.Intent, tb.Requirement),
+        (tb.has_component_threshold, tb.Intent, XSD.double),
         # ParameterValue
         (tb.forParameter, tb.ParameterValue, tb.Parameter),
         # Requirement
@@ -144,9 +138,6 @@ def add_properties(ontology: Graph):
         # Evaluation Requirement
         (tb.withMethod, tb.EvaluationRequirement, tb.Method),
         (tb.onMetric, tb.EvaluationRequirement, tb.Metric),
-        # Visualization Requirement
-        (tb.hasplotType, tb.VisualizationRequirement, tb.PlotType),
-        (tb.hasplotProperties, tb.VisualizationRequirement, tb.PlotProperties),
         # Task
         (tb.subtaskOf, tb.Task, tb.Task),
         (tb.tackles, tb.Task, tb.Intent),
@@ -193,7 +184,6 @@ def add_properties(ontology: Graph):
         (tb.hasOutput, tb.Step, tb.Data),
         (tb.runs, tb.Step, tb.Component),
         (tb.usesParameter, tb.Step, tb.Parameter),
-        # (tb.order, tb.Step, XSD.integer),
         # Parameter
         (tb.specifiedBy, tb.Parameter, tb.ParameterSpecification),
         (tb.has_datatype, tb.Parameter, None),
@@ -201,7 +191,6 @@ def add_properties(ontology: Graph):
         # Hyperparameter Specification
         (tb.hasValue, tb.ParameterSpecification, None),
         # Data
-        # (tb.conformsTo, tb.Data, tb.DataTag),
         (dolce.hasQuality, tb.Data, tb.DataCharacteristics),
         # Data Characteristics
         (tb.hasValue, tb.DataCharacteristics, XSD.string),
@@ -229,13 +218,6 @@ def add_properties(ontology: Graph):
 
     for s, p, o in dproperties:
         add_datatype_property(ontology, s, p, o)
-
-    # oproperties = [
-    #     (tb.has_value, tb.ParameterValue, None),
-    # ]
-
-    # for s, p, o in oproperties:
-    #     add_property(ontology, s, p, o)
 
     subproperties = [
         # Column

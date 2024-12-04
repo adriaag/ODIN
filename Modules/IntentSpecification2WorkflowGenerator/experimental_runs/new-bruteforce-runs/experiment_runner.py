@@ -28,14 +28,12 @@ def build_experimental_workflow(workflow_name: str, ontology: Graph, dataset: UR
         component_implementation = get_component_implementation(ontology, component)
 
         input_specs = get_implementation_input_specs(ontology, component_implementation)
-        # print(f'INPUT SPECS: {input_specs}')
         input_data_index = identify_data_io(ontology, input_specs, return_index=True)
         transformation_inputs = [ab[f'{step_name}-input_{i}'] for i in range(len(input_specs))]
         transformation_inputs[input_data_index] = dataset_node
         annotate_ios_with_specs(ontology, workflow_graph, transformation_inputs, input_specs)
 
         output_specs = get_implementation_output_specs(ontology, component_implementation)
-        # output_model_index = identify_model_io(ontology, output_specs, return_index=True)
         output_data_index = identify_data_io(ontology, output_specs, return_index=True)
         transformation_outputs = [ab[f'{step_name}-output_{i}'] for i in range(len(output_specs))]
         annotate_ios_with_specs(ontology, workflow_graph, transformation_outputs, output_specs)
@@ -83,9 +81,6 @@ def build_experimental_workflows(ontology: Graph, intent_graph: Graph, destinati
         
         shapes_to_satisfy = identify_data_io(ontology, inputs)
         assert shapes_to_satisfy is not None and len(shapes_to_satisfy) > 0
-        # print(f'SHAPES: {shapes_to_satisfy}')
-        # if shapes_to_satisfy is None or len(shapes_to_satisfy) <= 0:
-        #     shapes_to_satisfy = []
 
         unsatisfied_shapes = [shape for shape in shapes_to_satisfy if
                               not satisfies_shape(ontology, ontology, shape, dataset)]

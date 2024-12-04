@@ -8,47 +8,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from pipeline_generator.optimized_pipeline_generator import *
 
 
-# def abstract_planner(ontology: Graph, intent: Graph, visualization_parameters: Dict[str, List[str]]) -> Tuple[
-#     Dict[Node, Dict[Node, List[Node]]], Dict[Node, List[Node]], Dict[str, Union[str, List[str]]]]:
-#     dataset, task, algorithm, intent_iri = get_intent_info(intent)
-
-#     viz_params = visualization_parameters
-
-#     algs = get_algorithms_from_task(ontology, task)
-
-#     impls = get_potential_implementations(ontology, task, algorithm)
-
-#     algs_shapes = {}
-#     alg_plans = {alg: [] for alg in algs}
-#     for impl in impls:
-#         alg = next(ontology.objects(impl[0], tb.implements)), 
-#         (impl[0], RDF.type, tb.Implementation) in ontology and (tb.ApplierImplementation not in ontology.objects(impl[0], RDF.type))
-
-#         algs_shapes[alg[0]] = impl[1::][0][0]
-
-#         alg_plans[alg[0]].append(impl)
-
-    
-#     plans = {}
-#     for alg in algs:
-#         if cb.TrainTabularDatasetShape in algs_shapes[alg]:
-#             trainer = cb.term(alg.fragment + '-Train')
-#             plans[alg] = {
-#                 cb.DataLoading: [cb.TrainTestSplit],
-#                 cb.TrainTestSplit: [trainer, alg],
-#                 trainer: [alg],
-#                 alg: [cb.DataStoring],
-#                 cb.DataStoring: []
-#             }
-#         else:
-#             plans[alg] = {
-#                 cb.DataLoading: [alg],
-#                 alg: [],
-#             }
-
-#     return plans, alg_plans, viz_params
-
-
 def connect_algorithms(ontology, algos_list):
     impls_algos = {imp : algo + "-Train" if "learner" in imp.fragment else algo
                    for algo in algos_list for (imp, _) in get_all_implementations(ontology, None, algo)}
@@ -84,9 +43,8 @@ def connect_algorithms(ontology, algos_list):
     return linked_impls
 
 
-def abstract_planner(ontology: Graph, intent: Graph, visualization_parameters: Dict[str, List[str]]) -> Tuple[
-    Dict[Node, Dict[Node, List[Node]]], Dict[Node, List[Node]], Dict[str, Union[str, List[str]]]]:
-    viz_params = visualization_parameters
+def abstract_planner(ontology: Graph, intent: Graph) -> Tuple[
+    Dict[Node, Dict[Node, List[Node]]], Dict[Node, List[Node]]]:
 
     dataset, task, algorithm, intent_iri = get_intent_info(intent)
 
@@ -111,36 +69,13 @@ def abstract_planner(ontology: Graph, intent: Graph, visualization_parameters: D
         else:
             plans[alg] = connect_algorithms(ontology, [cb.DataLoading, alg])
 
-    return plans, alg_plans, viz_params
+    return plans, alg_plans
 
 
-def workflow_planner(ontology: Graph, implementations: List, intent: Graph, visualization_parameters: Dict[str, List[str]]):
+def workflow_planner(ontology: Graph, implementations: List, intent: Graph):
     dataset, task, algorithm, intent_iri = get_intent_info(intent)
 
-    viz_parameters = {}
-    viz_parameters['columns_choice'] = []
-    if visualization_parameters['categorical_column_choice']!='':
-        viz_parameters['columns_choice'].append(visualization_parameters['categorical_column_choice'])
-    elif visualization_parameters['categorical_column_choice']=='' and visualization_parameters['numerical_column_choice']:
-        viz_parameters['columns_choice'].append(visualization_parameters['numerical_column_choice']) 
-    if visualization_parameters['numerical_column_choice']!='' and len(visualization_parameters['group_numerical_column_choices'])==0:
-        viz_parameters['freq_cols'] = [visualization_parameters['numerical_column_choice']]
-    viz_parameters['freq_num'] = len(visualization_parameters['group_numerical_column_choices'])
-    if viz_parameters['freq_num'] > 0:
-        viz_parameters['freq_cols'] = visualization_parameters['group_numerical_column_choices']
-    if visualization_parameters['x_axis_column'] != '' and visualization_parameters['y_axis_column'] != '':
-        viz_parameters['columns_choice'].append(visualization_parameters['x_axis_column'])
-        viz_parameters['columns_choice'].append(visualization_parameters['y_axis_column'])
-    if len(visualization_parameters['y_axis_column_group'])>0:
-        viz_parameters['columns_choice'].append(visualization_parameters['x_axis_column'])
-        viz_parameters['y_num'] = len(visualization_parameters['y_axis_column_group'])
-        viz_parameters['freq_cols'] = visualization_parameters['y_axis_column_group']
-    if len(visualization_parameters['x_axis_column_group'])>0:
-        viz_parameters['columns_choice'].append(visualization_parameters['y_axis_column'])
-        viz_parameters['x_num'] = len(visualization_parameters['x_axis_column_group'])
-        viz_parameters['freq_cols'] = visualization_parameters['x_axis_column_group']
-    print(f"COLUMN CHOICE: {viz_parameters['columns_choice']}")
-    
+    component_threshold = float(next(intent.objects(intent_iri, tb.has_component_threshold), None))
 
     components = [
         (c, impl, inputs)
@@ -164,7 +99,7 @@ def workflow_planner(ontology: Graph, implementations: List, intent: Graph, visu
         }
 
         for transformation, methods in available_transformations.items():
-            best_components = get_best_components(ontology, task, methods, dataset, 1.0)
+            best_components = get_best_components(ontology, task, methods, dataset, component_threshold/100.0)
 
             available_transformations[transformation] = list(best_components.keys())
 
@@ -177,7 +112,7 @@ def workflow_planner(ontology: Graph, implementations: List, intent: Graph, visu
                                                   leave=False):
             workflow_name = f'workflow_{workflow_order}_{intent_iri.fragment}_{uuid.uuid4()}'.replace('-', '_')
             wg, w = build_general_workflow(workflow_name, ontology, dataset, component,
-                                              transformation_combination, viz_parameters) #need to add visualization details
+                                           transformation_combination, intent) 
 
             wg.add((w, tb.generatedFor, intent_iri))
             wg.add((intent_iri, RDF.type, tb.Intent))

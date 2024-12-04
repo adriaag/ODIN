@@ -8,8 +8,10 @@ from .functions import *
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common.common import *
+# from pipeline_generator.optimized_pipeline_generator import get_inputs_numeric_columns, get_inputs_categorical_columns, get_inputs_all_columns
 from pipeline_translator.general_pipeline_translator import translate_graph_folder, translate_graph
-from pipeline_generator.optimized_pipeline_generator import get_inputs_numeric_columns, get_inputs_categorical_columns, get_inputs_all_columns
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -29,7 +31,8 @@ selected_plans = []
 
 @app.get('/datasets')
 def get_datasets():
-    datasets = {n.fragment: n for n in ontology.subjects(RDF.type, dmop.TabularDataset)}
+    datasets = {n.fragment: n for n in ontology.subjects(
+        RDF.type, dmop.TabularDataset)}
     return datasets
 
 
@@ -44,39 +47,44 @@ def run_abstract_planner():
     intent_graph = get_graph_xp()
 
     data = request.json
-
-    # print(f'DATA: {data}')
-
     intent_name = data.get('intent_name', '')
     dataset = data.get('dataset', '')
     task = data.get('problem', '')
-    visualization_parameters = data.get('visualization_parameters', '')
-
-    # print(f'INTENT: {intent_name}')
-    # print(f'VIZ PARAMS: {visualization_parameters}')
-    # print(f'TASK: {task}')
+    algorithm = data.get('algorithm', '')
+    print(f'ALGO: {type(algorithm)}')
+    exposed_parameters = data.get('exposed_parameters', '')
+    percentage = data.get('preprocessing_percentage', '')
 
     intent_graph.add((ab.term(intent_name), RDF.type, tb.Intent))
     intent_graph.add((ab.term(intent_name), tb.overData, URIRef(dataset)))
     intent_graph.add((URIRef(task), tb.tackles, ab.term(intent_name)))
+    if algorithm != "":
+        intent_graph.add((ab.term(intent_name), tb.specifies, cb.term(algorithm)))
 
-    global abstract_plans, algorithm_implementations, intent, viz_params
+    for exp_param in exposed_parameters:
+        param_val = list(exp_param.values())[0]
+        param = list(exp_param.keys())[0]
+        intent_graph.add((ab.term(intent_name), tb.specifiesValue, Literal(param_val)))
+        intent_graph.add((Literal(param_val), tb.forParameter, URIRef(param)))
+
+    intent_graph.add((ab.term(intent_name), tb.has_component_threshold, Literal(percentage)))
+
+    global abstract_plans, algorithm_implementations, intent
     intent = intent_graph
-    viz_params = visualization_parameters
-
 
     print('ABOUT TO RUN ABSTRACT PLANNING...')
 
-    abstract_plans, algorithm_implementations, viz_params = abstract_planner(ontology, intent, viz_params)
+    abstract_plans, algorithm_implementations = abstract_planner(ontology, intent)
 
     print('SUCCESSFULLY FINISHED ABSTRACT PLANNING')
-    
+
     return Response(status=204)
 
 
 @app.get('/visualization_algorithms')
 def get_visualization_algorithms():
-    viz_algorithms = {n.fragment: n for n in ontology.subjects(tb.solves, cb.DataVisualization)}
+    viz_algorithms = {n.fragment: n for n in ontology.subjects(
+        tb.solves, cb.DataVisualization)}
     return viz_algorithms
 
 
@@ -90,41 +98,42 @@ def get_dataset_columns():
                        if (dataset_uri, dmop.hasColumn, n) in ontology}
     return dataset_columns
 
-# @app.post('/exposed_parameters')
-# def get_exposed_parameters():
-#     data = request.json
-#     task = data.get('problem', '')
-#     algorithm = data.get('algorithm', '')
 
-    # exposed_parameters = {
-    #     exp_param: {
-    #         "label": label,
-    #         "value": value,
-    #         "condition": condition
-    #     }
-    #     for exp_param, label, value, condition in ontology.query(
-    #         f"""
-    #         PREFIX tb: <{tb}>
-    #         SELECT DISTINCT ?exp_param ?label ?value ?condition
-    #         WHERE {{
-    #     {task.n3()} a tb:Task .
-    #     {{
-    #         {"BIND(" + algorithm.n3() + " AS ?algorithm) ." if algorithm else f"?algorithm tb:solves {task.n3()} ."}
-    #     }}
-    #     # {'?algorithm' if algorithm is None else algorithm.n3()} tb:solves {task.n3()} .
-    #     ?imp tb:implements ?algorithm .
-    #     ?com tb:hasImplementation ?imp ;
-    #         tb:exposesParameter ?exp_param .
-    #     ?exp_param tb:has_defaultvalue ?value;
-    #             tb:has_condition ?condition ;
-    #             rdfs:label ?label .
-    # }}
-    # """
-    #     )
-    # }
+def get_exp_params(ontology: Graph, task: URIRef, algorithm: URIRef):
 
-#     return exposed_parameters
+    expparams_query = f"""
+    PREFIX tb: <{tb}>
+    SELECT DISTINCT ?exp_param ?label ?value ?condition
+    WHERE {{
+        {task.n3()} a tb:Task .
+        {{
+            {"BIND(" + algorithm.n3() + " AS ?algorithm) ." if algorithm else f"?algorithm tb:solves {task.n3()} ."}
+        }}
+        # {'?algorithm' if algorithm is None else algorithm.n3()} tb:solves {task.n3()} .
+        ?imp tb:implements ?algorithm .
+        ?com tb:hasImplementation ?imp ;
+            tb:exposesParameter ?exp_param .
+        ?exp_param tb:has_defaultvalue ?value;
+                tb:has_condition ?condition ;
+                rdfs:label ?label .
+    }}
+    """
 
+    result = ontology.query(expparams_query).bindings
+    exposed_parameters = [{param['exp_param']: (
+        param['label'], param['value'], param['condition'])} for param in result]
+
+    return exposed_parameters
+
+
+@app.post('/exposed_parameters')
+def get_exposed_parameters():
+    data = request.json
+    task = data.get('problem', '')
+    algorithm = data.get('algorithm', '')
+    task = URIRef(task)
+    algorithm = URIRef(algorithm)
+    return get_exp_params(ontology, task, algorithm)
 
 
 @app.post('/dataset_categorical_columns')
@@ -134,19 +143,19 @@ def get_dataset_categorical_columns():
     dataset_uri = URIRef(dataset)
 
     categorical_columns = {n.fragment.split("/")[1]:
-                   n for n in set(ontology.objects(dataset_uri, dmop.hasColumn)).intersection(set(ontology.subjects(dmop.isCategorical, Literal(True))))
-                   }
+                           n for n in set(ontology.objects(dataset_uri, dmop.hasColumn)).intersection(set(ontology.subjects(dmop.isCategorical, Literal(True))))
+                           }
     return categorical_columns
+
 
 @app.post('/dataset_numerical_columns')
 def get_dataset_numerical_columns():
     data = request.json
     dataset = data.get('dataset', '')
     dataset_uri = URIRef(dataset)
-
     numerical_columns = {n.fragment.split("/")[1]:
                          n for n in set(ontology.objects(dataset_uri, dmop.hasColumn)).difference(set(ontology.subjects(dmop.isCategorical, Literal(True))))
-                         } 
+                         }
     return numerical_columns
 
 
@@ -167,13 +176,14 @@ def run_logical_planner():
     impls = [impl
              for alg, impls in algorithm_implementations.items() if str(alg) in plan_ids
              for impl in impls]
-    
+
     print('RUNNING WORKFLOW PLANNING...')
-    workflow_plans = workflow_planner(ontology, impls, intent, viz_params)
+    workflow_plans = workflow_planner(ontology, impls, intent)
     print('SUCCESSFULLY FINISHED WORKFLOW PLANNING')
 
     print('RUNNING LOGICAL PLANNING...')
-    logical_plans, logical_to_workflows = logical_planner(ontology, workflow_plans)
+    logical_plans, logical_to_workflows = logical_planner(
+        ontology, workflow_plans)
     print('SUCCESSFULLY FINISHED LOGICAL PLANNING')
 
     return Response(status=204)

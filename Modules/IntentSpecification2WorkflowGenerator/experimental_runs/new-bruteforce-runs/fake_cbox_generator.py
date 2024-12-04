@@ -14,38 +14,6 @@ from common import *
 from ontology_populator.implementations.core import Implementation, Component, CopyTransformation, Transformation
 
 
-# def add_random_children(graph: Graph, namespace: Namespace, edge: Optional[URIRef], parent: URIRef, min_children: int,
-#                         max_children: int, child_type: URIRef) -> List[URIRef]:
-#     num_children = Random().randint(min_children, max_children)
-#     children = []
-#     for i in range(num_children):
-#         child = namespace.term(f'{parent.fragment}_{i}')
-#         children.append(child)
-#         graph.add((child, RDF.type, child_type))
-#         if edge is not None:
-#             graph.add((child, edge, parent))
-#     return children
-
-
-# def generate_problems(cbox: Graph, num_problems: int = 100) -> \
-#         Tuple[Dict[URIRef, URIRef], Dict[URIRef, List[URIRef]], List[URIRef]]:
-#     cbox.add((cb.Problem, RDF.type, tb.Problem))
-
-#     next_problems = add_random_children(cbox, cb, tb.subProblemOf, tb.Problem, 1, 4, cb.Problem)
-#     parent = {p: cb.Problem for p in next_problems}
-#     children = {cb.Problem: next_problems}
-
-#     while len(parent) < num_problems - 1:
-#         problem = next_problems.pop(0)
-#         problem_children = add_random_children(cbox, cb, tb.subProblemOf, problem, 1 if len(next_problems) == 0 else 0,
-#                                                min(4, num_problems - len(parent)), cb.Problem)
-#         next_problems.extend(problem_children)
-#         parent.update({p: problem for p in problem_children})
-#         children.update({problem: problem_children})
-
-#     return parent, children, [p for p in parent.keys() if p not in children]
-
-
 def generate_main_tasks(graph: Graph) -> List[URIRef]:
     graph.add((cb.MainTask, RDF.type, tb.Task))
     graph.add((cb.DataProcessingTask, RDF.type, tb.Task))
@@ -86,31 +54,6 @@ def generate_datatags(graph: Graph, num_constraints: int) -> Tuple[URIRef, List[
         graph.add((cb[f'has_constraint_{i}'], SH.hasValue, Literal(True)))
 
     return cb['TabularDataset'], datatags
-
-
-# def generate_rules(graph: Graph, num_rules: int) -> Tuple[URIRef, List[Tuple[URIRef, URIRef]]]:
-
-#     graph.add((cb['TabularDataset'], RDF.type, tb.DataTag))
-#     graph.add((cb['TabularDataset'], RDF.type, SH.NodeShape))
-#     graph.add((cb['TabularDataset'], SH.targetClass, dmop.TabularDataset))
-
-#     rules = []
-
-#     for i in range(num_rules):
-#         rule = cb[f'Rule_{i}']
-#         rules.append((rule, cb[f'rule_{i}']))
-
-#         graph.add((rule, RDF.type, tb.DataTag))
-#         graph.add((rule, RDF.type, SH.NodeShape))
-#         graph.add((rule, SH.targetClass, dmop.TabularDataset))
-#         graph.add((rule, SH.property, cb[f'has_constraint_{i}']))
-
-#         graph.add((cb[f'has_rule_{i}'], RDF.type, SH.PropertyConstraintComponent))
-#         graph.add((cb[f'has_rule_{i}'], SH.path, cb[f'rule_{i}']))
-#         graph.add((cb[f'has_rule_{i}'], SH.datatype, XSD.boolean))
-#         graph.add((cb[f'has_rule_{i}'], SH.hasValue, Literal(True)))
-
-#     return cb['TabularDataset'], rules
 
 
 
@@ -187,7 +130,6 @@ def generate_fake_abox(num_components: int, num_requirements_per_component: int,
     tasks = generate_main_tasks(cbox)
     algorithms = generate_algorithms(cbox, tasks)
     base_shape, datatags = generate_datatags(cbox, num_constraints=10)
-    # base_shape2, rules = generate_rules(cbox, num_rules=5)
     transformations = generate_transformations(cbox, datatags, num_components_per_requirement, RandomMethod.max)
     components = genereate_components(cbox, num_components, num_requirements_per_component, datatags,
                                       RandomMethod.max)

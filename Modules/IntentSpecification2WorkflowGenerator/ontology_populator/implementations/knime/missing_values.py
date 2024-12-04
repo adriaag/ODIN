@@ -58,7 +58,7 @@ mean_imputation_component = Component(
         (cb.Classification, 2):[
             {'rule': cb.TabularDataset, 'weight': 1}
         ],
-        (cb.DataVisualization, 2): [
+        (cb.DataVisualization, 1): [
             {'rule': cb.TabularDataset, 'weight': 1}
         ]
     },

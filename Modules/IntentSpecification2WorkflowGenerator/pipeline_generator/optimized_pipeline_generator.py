@@ -208,7 +208,6 @@ def get_potential_implementations(ontology: Graph, task_iri: URIRef, algorithm: 
 """
     results = ontology.query(main_implementation_query).bindings
     implementations = [result['implementation'] for result in results]
-    print(f"FOCUSED IMPL: {implementations}")
 
     implementations_with_shapes = [
         (implementation, get_implementation_input_specs(ontology, implementation))
@@ -446,7 +445,7 @@ def get_component_overridden_paramspecs(ontology: Graph, workflow_graph: Graph, 
 
 
 def perform_param_substitution(graph: Graph, implementation: URIRef, parameters: Dict[URIRef, Tuple[Literal, Literal, Literal]],
-                               inputs: List[URIRef], intent_graph: Graph = None, vis_necessities: Dict[str, List[str]] = None) -> Dict[URIRef, Tuple[Literal, Literal, Literal]]:
+                               inputs: List[URIRef], intent_graph: Graph = None) -> Dict[URIRef, Tuple[Literal, Literal, Literal]]:
     
     parameter_keys = list(parameters.keys())
     intent_parameters = get_intent_parameters(intent_graph) if intent_graph is not None else {}
@@ -475,9 +474,9 @@ def perform_param_substitution(graph: Graph, implementation: URIRef, parameters:
             if condition.value == '$$FLOAT_COLUMN$$' and float not in feature_types:
                 parameters.pop(param)
                 continue
-        # if isinstance(value.value, str) and '$$LABEL$$' in value.value:
-        #     new_value = value.replace('$$LABEL$$', f'{get_inputs_label_name(graph, inputs)}')
-        #     parameters[param] = (Literal(new_value), order, condition)
+        if isinstance(value.value, str) and '$$LABEL$$' in value.value:
+            new_value = value.replace('$$LABEL$$', f'{get_inputs_label_name(graph, inputs)}')
+            parameters[param] = (Literal(new_value), order, condition)
         if isinstance(value.value, str) and '$$NUMERIC_COLUMNS$$' in value.value:
             new_value = value.replace('$$NUMERIC_COLUMNS$$', f'{get_inputs_numeric_columns(graph, inputs)}')
             parameters[param] = (Literal(new_value), order, condition)
@@ -507,11 +506,8 @@ def perform_param_substitution(graph: Graph, implementation: URIRef, parameters:
             elif condition.value == '$$LINEPLOT_EXCLUDED$$':
                 possible_cols = get_inputs_all_columns(graph, inputs) + ['<RowID>']
                 com_col = [str(parameters[param][0]) for param in intent_parameters.keys() if 'lineplot_x' in str(param)]
-                print(f'POSSIBLE: {possible_cols}')
                 included_cols = [ast.literal_eval(str(parameters[param][0])) for param in intent_parameters.keys() if 'included' in str(param)][0]
-                print(f'INCLUDED: {included_cols}')
                 excluded_cols = list(set(possible_cols) - set(com_col) - set(included_cols))
-                print(f'EXCLUDED: {excluded_cols}')
                 parameters[param] = (Literal(excluded_cols), order, condition)
 
     return parameters
@@ -527,7 +523,9 @@ def assign_to_parameter_specs(graph: Graph,
 
         value, order, _ = parameters[param]
         uri = param.split('#')[-1] if '#' in param else param.split('/')[-1]
-        param_spec = ab.term(quote(f'{uri}_{value}_specification'.replace(' ','_').lower(), safe=":/-_"))
+        sanitized_value = quote(value, safe="-_")
+        sanitized_uri = URIRef(f'{uri}_{sanitized_value}_specification'.replace(' ','_').lower())
+        param_spec = ab.term(sanitized_uri)
         graph.add((param_spec, RDF.type, tb.ParameterSpecification))
         graph.add((param, tb.specifiedBy, param_spec))
         graph.add((param_spec, tb.hasValue, value))
@@ -846,7 +844,6 @@ def get_best_components(graph: Graph, task: URIRef, components: List[URIRef], da
 
     if len(sorted_preferred) > 0: ### there are multiple components to choose from
         best_scores = set([comp[1] for comp in sorted_preferred])
-        print(f'SCORES: {best_scores}')
         if len(best_scores) == 1:
             sorted_preferred = random.sample(sorted_preferred, int(math.ceil(len(sorted_preferred)*percentage))) if percentage else sorted_preferred
         elif len(best_scores) > 1: ### checking if there is at least one superior component
@@ -878,7 +875,7 @@ def add_loader_step(ontology: Graph, workflow_graph: Graph, workflow: URIRef, da
 
 
 def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef, main_component: URIRef,
-                           transformations: List[URIRef], intent_graph:Graph, vis_necessities: Dict[str, List[str]] = None) -> Tuple[Graph, URIRef]:
+                           transformations: List[URIRef], intent_graph:Graph) -> Tuple[Graph, URIRef]:
     workflow_graph = get_graph_xp()
     workflow = ab.term(workflow_name)
     workflow_graph.add((workflow, RDF.type, tb.Workflow))
@@ -930,8 +927,7 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             singular_parameters = perform_param_substitution(graph=workflow_graph, parameters=singular_parameters,
                                                                 implementation=singular_component_implementation,
                                                                 inputs=singular_transformation_inputs,
-                                                                intent_graph=intent_graph,
-                                                                vis_necessities=vis_necessities)
+                                                                intent_graph=intent_graph)
             singular_param_specs = assign_to_parameter_specs(workflow_graph, singular_parameters)
             singular_param_specs.update(singular_overridden_parameters)
             singular_step = add_step(workflow_graph, workflow,
@@ -1083,11 +1079,14 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
     
     dataset, task, algorithm, intent_iri = get_intent_info(intent_graph)
 
+    component_threshold = float(next(intent_graph.objects(intent_iri, tb.has_component_threshold), None))
+
     if log:
         tqdm.write(f'Intent: {intent_iri.fragment}')
         tqdm.write(f'Dataset: {dataset.fragment}')
         tqdm.write(f'Task: {task.fragment}')
         tqdm.write(f'Algorithm: {algorithm.fragment if algorithm is not None else [algo.fragment for algo in get_algorithms_from_task(ontology, task)]}')
+        tqdm.write(f'Preprocessing Component Percentage Threshold: {component_threshold*100}%')
         tqdm.write('-------------------------------------------------')
 
     all_cols = get_inputs_all_columns(ontology, [dataset])
@@ -1156,7 +1155,7 @@ def build_workflows(ontology: Graph, intent_graph: Graph, destination_folder: st
 
         for tr, methods in available_transformations.items():
 
-            best_components = get_best_components(ontology, task, methods, dataset)
+            best_components = get_best_components(ontology, task, methods, dataset, component_threshold)
 
             available_transformations[tr] = list(best_components.keys())
 
@@ -1200,7 +1199,7 @@ def interactive():
     intent_graph = get_graph_xp()
     intent = input('Introduce the intent name [ClassificationIntent]: ') or 'VisualizationIntent' #or 'ClassificationIntent'
     data = input('Introduce the dataset name [titanic.csv]: ') or 'titanic.csv'
-    task = input('Introduce the problem name [Classification]: ') or  'DataVisualization' #or 'Classification'
+    task = input('Introduce the task name [Classification]: ') or  'DataVisualization' #or 'Classification'
 
 
     intent_graph.add((ab.term(intent), RDF.type, tb.Intent))
@@ -1215,6 +1214,10 @@ def interactive():
         vis_algorithm = str(input(f'Choose a visualization algorithm from the following (case-sensitive):{algos}'))
         if vis_algorithm is not None:
             intent_graph.add((ab.term(intent), tb.specifies, cb.term(vis_algorithm)))
+
+    component_percentage = float(input('Choose a threshold component percentage (for the preprocessing components) [100, 75, 50, 25] (%): ') or 100)/100.0
+
+    intent_graph.add((ab.term(intent), tb.has_component_threshold, Literal(component_percentage)))
 
     folder = input('Introduce the folder to save the workflows: ')
     if folder == '':
