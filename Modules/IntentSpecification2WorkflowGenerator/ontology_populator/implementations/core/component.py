@@ -39,7 +39,6 @@ class Component:
         }[self.implementation.implementation_type]
         self.counterpart = counterpart
         if self.counterpart is not None:
-            # if self.component_type is not None:
             assert self.component_type in {tb.LearnerComponent, tb.ApplierComponent, tb.VisualizerComponent}
             if isinstance(self.counterpart, list):
                 for c in self.counterpart:
@@ -67,42 +66,20 @@ class Component:
         g.add((self.uri_ref, tb.hasTransformation, Collection(g, uri=BNode(), seq=transformation_nodes).uri))
 
         # Overriden parameters triples
-        # for parameter, value in self.overriden_parameters:
-            # parameter_value = BNode()
-            # g.add((parameter_value, RDF.type, tb.ParameterValue))
-            # g.add((parameter_value, tb.forParameter, self.implementation.parameters[parameter].uri_ref))
-            # g.add((parameter_value, tb.has_value, Literal(value)))
-            # g.add((self.uri_ref, tb.overridesParameter, parameter_value))
         for para_spec in self.overriden_parameters:
             g.add((para_spec.uri_ref, RDF.type, tb.ParameterSpecification))
-            # g.add((para_spec.uri_ref, RDFS.label, para_spec.url_name))
             g.add((self.uri_ref, tb.overridesParameter, para_spec.uri_ref))
             g.add((para_spec.parameter.uri_ref, tb.specifiedBy, para_spec.uri_ref))
             if isinstance(para_spec.value, Literal):
                 g.add((para_spec.uri_ref, tb.hasValue, para_spec.value))
             else:
                 g.add((para_spec.uri_ref, tb.hasValue, Literal(para_spec.value)))
-            # print(f'OVRDN: {self.url_name} --> {para_spec.url_name} --> {para_spec.value}')
 
         # Exposed parameters triples
         for parameter in self.exposed_parameters:
             g.add((self.uri_ref, tb.exposesParameter, parameter.uri_ref))
 
-
-        # if isinstance(self.rules, list):
-        #     if len(self.rules) > 1:
-        #         preference_collection = BNode()
-        #         preference_shape = self.namespace.term(f'Shape_{uuid.uuid4()}')
-        #         Collection(g, preference_collection, self.rules)
-        #         g.add((preference_shape, RDF.type, tb.DataTag))
-        #         g.add((preference_shape, RDF.type, SH.NodeShape))
-        #         g.add((preference_shape, SH['and'], preference_collection))
-        #         g.add((self.uri_ref, tb.hasPreference, preference_shape))
-        #     elif len(self.rules) == 1:
-        #         g.add((self.uri_ref, tb.hasPreference, self.rules[0]))
-        # else:
-        #     g.add((self.uri_ref, tb.hasPreference, self.rules))
-
+        # Rules triples
         if isinstance(self.rules, dict):
             for task, rules in self.rules.items():
                 if len(rules) > 0:
@@ -117,9 +94,6 @@ class Component:
 
         return self.uri_ref
 
-        # Specification of Input and Output Types
-        # g.add(self.uri_ref, tb.specifiesInput, self.input_type)
-        # g.add(self.uri_ref, tb.specifiesOutput, self.output_type)
 
     def add_counterpart_relationship(self, g: Graph):
         if self.counterpart is None:
