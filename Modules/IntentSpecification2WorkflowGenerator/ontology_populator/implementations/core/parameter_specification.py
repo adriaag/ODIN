@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 
 class ParameterSpecification:
-    def __init__(self, parameter: URIRef,
+    def __init__(self, parameter: URIRef, #this has Parameter type
                  value: Union[URIRef, Literal] = None,
                  namespace: Namespace = ab) -> None:
         super().__init__()
