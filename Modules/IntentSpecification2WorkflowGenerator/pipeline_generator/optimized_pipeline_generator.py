@@ -451,12 +451,18 @@ def perform_param_substitution(graph: Graph, implementation: URIRef, parameters:
     intent_parameters = get_intent_parameters(intent_graph) if intent_graph is not None else {}
     intent_parameter_keys = list(intent_parameters.keys())
 
+    #tqdm.write("intentParams")
+    #tqdm.write(str(intent_parameters))
+
     updated_parameters = parameters.copy()
 
     for parameter, (default_value, position, condition) in parameters.items():
         for parameter in intent_parameter_keys:
             intent_value = intent_parameters[parameter]
             updated_parameters[parameter] = (intent_value, position, condition)
+    
+    #tqdm.write(str(parameters))
+    #tqdm.write(str(updated_parameters))
 
     parameters.update(updated_parameters)
             
@@ -747,9 +753,12 @@ def copy_subgraph(source_graph: Graph, source_node: URIRef, destination_graph: G
 def annotate_io_with_spec(ontology: Graph, workflow_graph: Graph, io: URIRef, io_spec: List[URIRef]) -> None:
     
     for spec in io_spec:
+        
         io_spec_class = next(ontology.objects(spec, SH.targetClass, True), None)
+
         if io_spec_class is None or (io, RDF.type, io_spec_class) in workflow_graph:
             continue
+
         workflow_graph.add((io, RDF.type, io_spec_class))
 
 
@@ -764,6 +773,7 @@ def run_copy_transformation(ontology: Graph, workflow_graph: Graph, transformati
                             outputs: List[URIRef]):
     input_index = next(ontology.objects(transformation, tb.copy_input, True)).value
     output_index = next(ontology.objects(transformation, tb.copy_output, True)).value
+    tqdm.write(f"Copy transformation: i:{str(input_index)} o:{str(output_index)}")
     input = inputs[input_index - 1]
     output = outputs[output_index - 1]
 
@@ -774,10 +784,14 @@ def run_component_transformation(ontology: Graph, workflow_graph: Graph, compone
                                  outputs: List[URIRef],
                                  parameters_specs: Dict[URIRef, Tuple[URIRef, Literal, Literal]]) -> None:
     transformations = get_component_transformations(ontology, component)
+    tqdm.write("run_component_transformation")
+    
     for transformation in transformations:
+        tqdm.write(str(transformation))
         if (transformation, RDF.type, tb.CopyTransformation) in ontology:
             run_copy_transformation(ontology, workflow_graph, transformation, inputs, outputs)
         elif (transformation, RDF.type, tb.LoaderTransformation) in ontology:
+            tqdm.write("loader_transformation")
             continue
         else:
             prefixes = f'''
@@ -796,9 +810,16 @@ PREFIX dmop: <{dmop}>
             for i in range(len(outputs)):
                 query = query.replace(f'$output{i + 1}', f'{outputs[i].n3()}')
             for param_spec, (param, value, order) in parameters_specs.items():
+                tqdm.write(param_spec)
+                tqdm.write(param)
+                tqdm.write(value)
+                tqdm.write(order)
                 query = query.replace(f'$param{order + 1}', f'{value.n3()}')
                 query = query.replace(f'$parameter{order + 1}', f'{value.n3()}')
             workflow_graph.update(query)
+
+            tqdm.write("Query:")
+            tqdm.write(str(query))
 
 
 def retreive_component_rules(graph: Graph, task:URIRef, component: URIRef):
@@ -876,6 +897,9 @@ def add_loader_step(ontology: Graph, workflow_graph: Graph, workflow: URIRef, da
 
 def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef, main_component: URIRef,
                            transformations: List[URIRef], intent_graph:Graph) -> Tuple[Graph, URIRef]:
+    
+    tqdm.write("\n\n BUILDING WORKFLOW")
+
     workflow_graph = get_graph_xp()
     workflow = ab.term(workflow_name)
     workflow_graph.add((workflow, RDF.type, tb.Workflow))
@@ -898,8 +922,12 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
 
 
     for train_component in [*transformations, main_component]:
+        tqdm.write("components")
+        tqdm.write(train_component)
     
         test_component = next(ontology.objects(train_component, tb.hasApplier, True), None)
+        if not test_component is None:
+            tqdm.write(test_component)
         same = train_component == test_component
         train_component_implementation = get_component_implementation(ontology, train_component)
 
@@ -912,24 +940,43 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             singular_input_specs = get_implementation_input_specs(ontology, singular_component_implementation)
             singular_input_data_index = identify_data_io(ontology, singular_input_specs, return_index=True)
             singular_transformation_inputs = None
+
+            tqdm.write("Sepecs singular input:")
+            tqdm.write(str(singular_input_specs))
+
             if singular_input_data_index is not None:
                 singular_transformation_inputs = [ab[f'{singular_step_name}-input_{i}'] for i in range(len(singular_input_specs))]
                 singular_transformation_inputs[singular_input_data_index] = previous_node
+                tqdm.write(str(singular_transformation_inputs))
                 annotate_ios_with_specs(ontology, workflow_graph, singular_transformation_inputs,
                                         singular_input_specs)
+            
+            tqdm.write("Singular output:")
             singular_output_specs = get_implementation_output_specs(ontology, singular_component_implementation)
             singular_transformation_outputs = [ab[f'{singular_step_name}-output_{i}'] for i in range(len(singular_output_specs))]
             annotate_ios_with_specs(ontology, workflow_graph, singular_transformation_outputs,
                                 singular_output_specs)
             
+            tqdm.write("Sepecs singular output:")
+            tqdm.write(str(singular_output_specs))
+            tqdm.write(str(singular_transformation_outputs))
+
+            tqdm.write("parameters:")
+            
             singular_parameters = get_component_parameters(ontology, singular_component)
+
             singular_overridden_parameters = get_component_overridden_paramspecs(ontology, workflow_graph, singular_component)
             singular_parameters = perform_param_substitution(graph=workflow_graph, parameters=singular_parameters,
                                                                 implementation=singular_component_implementation,
                                                                 inputs=singular_transformation_inputs,
                                                                 intent_graph=intent_graph)
+            
             singular_param_specs = assign_to_parameter_specs(workflow_graph, singular_parameters)
             singular_param_specs.update(singular_overridden_parameters)
+            tqdm.write(str(singular_param_specs))
+
+            
+
             singular_step = add_step(workflow_graph, workflow,
                                 singular_step_name,
                                 singular_component,
@@ -969,12 +1016,21 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             annotate_ios_with_specs(ontology, workflow_graph, train_transformation_inputs,
                                     train_input_specs)
 
+            tqdm.write("Sepecs train input:")
+            tqdm.write(str(train_transformation_inputs))
+            tqdm.write(str(train_input_specs))
             train_output_specs = get_implementation_output_specs(ontology, train_component_implementation)
             train_output_model_index = identify_model_io(ontology, train_output_specs, return_index=True)
             train_output_data_index = identify_data_io(ontology, train_output_specs, return_index=True)
             train_transformation_outputs = [ab[f'{train_step_name}-output_{i}'] for i in range(len(train_output_specs))]
             annotate_ios_with_specs(ontology, workflow_graph, train_transformation_outputs,
                                     train_output_specs)
+            
+            tqdm.write("Sepecs train output:")
+            tqdm.write(str(train_transformation_outputs))
+            tqdm.write(str(train_output_specs))
+
+            tqdm.write("parameters:")
 
             train_parameters = get_component_parameters(ontology, train_component)
             train_parameters = perform_param_substitution(graph=workflow_graph, implementation=train_component_implementation,
@@ -984,6 +1040,7 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             train_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, train_component)
             train_param_specs = assign_to_parameter_specs(workflow_graph, train_parameters)
             train_param_specs.update(train_overridden_paramspecs)
+            tqdm.write(str(train_param_specs))
             train_step = add_step(workflow_graph, workflow,
                                 train_step_name,
                                 train_component,
@@ -1007,6 +1064,8 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
 
             if test_dataset_node is not None:
 
+                tqdm.write("test dataset node")
+
                 test_step_name = get_step_name(workflow_name, task_order, test_component)
 
                 test_input_specs = get_implementation_input_specs(ontology,
@@ -1020,12 +1079,22 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
                 annotate_ios_with_specs(ontology, workflow_graph, test_transformation_inputs,
                                         test_input_specs)
                 
+                tqdm.write("Sepecs test input:")
+                tqdm.write(str(test_transformation_inputs))
+                tqdm.write(str(test_input_specs))
+                
                 test_implementation = get_component_implementation(ontology, test_component)
                 test_output_specs = get_implementation_output_specs(ontology, test_implementation)
                 test_output_data_index = identify_data_io(ontology, test_output_specs, return_index=True)
                 test_transformation_outputs = [ab[f'{test_step_name}-output_{i}'] for i in range(len(test_output_specs))]
                 annotate_ios_with_specs(ontology, workflow_graph, test_transformation_outputs,
                                         test_output_specs)
+                
+                tqdm.write("Sepecs test output:")
+                tqdm.write(str(test_transformation_outputs))
+                tqdm.write(str(test_output_specs))
+
+                tqdm.write("parameters:")
 
                 previous_test_steps = [previous_test_step, train_step] if not same else [previous_test_step]
                 test_parameters = get_component_parameters(ontology, test_component)
@@ -1038,6 +1107,8 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
                 test_overridden_paramspecs = get_component_overridden_paramspecs(ontology, workflow_graph, train_component)
                 test_param_specs = assign_to_parameter_specs(workflow_graph, test_parameters)
                 test_param_specs.update(test_overridden_paramspecs)
+                tqdm.write(str(test_param_specs))
+
                 test_step = add_step(workflow_graph, workflow,
                                     test_step_name,
                                     test_component,
@@ -1055,6 +1126,7 @@ def build_general_workflow(workflow_name: str, ontology: Graph, dataset: URIRef,
             
     
     if test_dataset_node is not None:
+        tqdm.write("saver state")
         saver_component = cb.term('component-csv_local_writer')
         saver_step_name = get_step_name(workflow_name, task_order, saver_component)
         saver_parameters = get_component_parameters(ontology, saver_component)
