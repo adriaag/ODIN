@@ -1,5 +1,6 @@
 *.pyc
 *.knime
 *.meta
+*.knwf
 .venv
 ontology_populator/test
