@@ -457,7 +457,7 @@ def perform_param_substitution(graph: Graph, implementation: URIRef, parameters:
     updated_parameters = parameters.copy()
 
     for parameter, (default_value, position, condition) in parameters.items():
-        for parameter in intent_parameter_keys:
+        if parameter in intent_parameter_keys:
             intent_value = intent_parameters[parameter]
             updated_parameters[parameter] = (intent_value, position, condition)
     
