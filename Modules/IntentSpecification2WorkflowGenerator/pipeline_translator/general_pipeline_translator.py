@@ -344,7 +344,8 @@ def package_workflow(folder: str, destination: str) -> None:
             for file in files:
                 file_path = os.path.join(root, file)
                 archive_path = os.path.relpath(file_path, folder)
-                zipf.write(file_path, arcname=os.path.join(os.path.basename(folder), archive_path))
+                workflow_name = os.path.splitext(os.path.basename(destination))[0]
+                zipf.write(file_path, arcname=os.path.join(workflow_name, archive_path))
 
 
 def translate_graph(ontology: Graph, source_path: str, destination_path: str, keep_folder=False) -> None:
