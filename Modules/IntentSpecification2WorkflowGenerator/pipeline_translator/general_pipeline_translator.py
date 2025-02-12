@@ -175,6 +175,7 @@ def create_step_file(ontology: Graph, workflow_graph: Graph, step: URIRef, folde
     model = get_step_model_config(ontology, workflow_graph, step)['model']
     root.append(model)
 
+    #reruns again the same function. It should be faster and cleaner to run the function once
     factory_settings = get_step_model_config(ontology, workflow_graph, step)['factory_settings']
     root.append(factory_settings)
 
@@ -300,10 +301,10 @@ def get_connections_config(workflow_graph: Graph, steps: List[URIRef]) -> ET.Ele
 
 def get_author_config() -> ET.Element:
     root = ET.Element('config', {'key': 'authorInformation'})
-    ET.SubElement(root, 'entry', {'key': 'authored-by', 'type': 'xstring', 'value': 'Diviloper'})
+    ET.SubElement(root, 'entry', {'key': 'authored-by', 'type': 'xstring', 'value': 'ODIN'})
     ET.SubElement(root, 'entry', {'key': 'authored-when', 'type': 'xstring',
                                   'value': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %z')})
-    ET.SubElement(root, 'entry', {'key': 'lastEdited-by', 'type': 'xstring', 'value': 'Diviloper'})
+    ET.SubElement(root, 'entry', {'key': 'lastEdited-by', 'type': 'xstring', 'value': 'ODIN'})
     ET.SubElement(root, 'entry', {'key': 'lastEdited-when', 'type': 'xstring',
                                   'value': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %z')})
     return root
