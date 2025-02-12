@@ -326,7 +326,7 @@ def create_workflow_file(workflow_graph: Graph, steps: List[URIRef], step_paths:
     ET.SubElement(root, 'entry', {'key': 'version', 'type': 'xstring', 'value': '4.1.0'})
     ET.SubElement(root, 'entry', {'key': 'name', 'type': 'xstring', 'isnull': 'true', 'value': ''})
     ET.SubElement(root, 'entry', {'key': 'customDescription', 'type': 'xstring', 'isnull': 'true', 'value': ''})
-    ET.SubElement(root, 'entry', {'key': 'state', 'type': 'xstring', 'value': 'IDLE'})
+    ET.SubElement(root, 'entry', {'key': 'state', 'type': 'xstring', 'value': 'CONFIGURED'})
     ET.SubElement(root, 'config', {'key': 'workflow_credentials'})
 
     root.append(node_config)
