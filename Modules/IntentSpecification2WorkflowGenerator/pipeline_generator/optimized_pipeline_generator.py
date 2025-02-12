@@ -267,7 +267,10 @@ def find_components_to_satisfy_shape(ontology: Graph, shape: URIRef, exclude_app
 def identify_data_io(ontology: Graph, ios: List[List[URIRef]], train: bool = False, test: bool = False, return_index: bool = False) -> Union[int, List[URIRef]]:
     for i, io_shapes in enumerate(ios):
         for io_shape in io_shapes:
-            if (io_shape, SH.targetClass, dmop.TabularDataset) in ontology or (io_shape, SH.targetClass, cb.TabularDatasetShape):
+            if ((io_shape, SH.targetClass, dmop.TabularDataset) in ontology 
+                or (io_shape, SH.targetClass, cb.TabularDatasetShape) in ontology 
+                or io_shape.fragment == "TabularDatasetShape"):
+
                 if test:
                     test_query = f'''
                     PREFIX sh: <{SH}>
